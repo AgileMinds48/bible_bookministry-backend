@@ -2,6 +2,7 @@ package com.evbooksministry.bibleandbookministry.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +38,7 @@ public class JWTFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader("Authorization");
 
 
+
         String uri = request.getRequestURI();
 
         if (uri.equalsIgnoreCase("/auth/login")
@@ -50,8 +52,12 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
+        String token = getTokenFromCookie(request.getCookies());
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         try{
-            final String token = authorizationHeader.substring(7);
             final String userEmail = jwtService.extractUsername(token);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -77,5 +83,16 @@ public class JWTFilter extends OncePerRequestFilter {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private String getTokenFromCookie(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("JWTAccess_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
