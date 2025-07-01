@@ -2,9 +2,12 @@ package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.enums.Gender;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
+import com.evbooksministry.bibleandbookministry.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 
@@ -16,7 +19,7 @@ import java.sql.Timestamp;
         @Index(name = "idx_user_email", columnList = "email"),
         @Index(name = "idx_user_role", columnList = "userRole")
 })
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -30,6 +33,7 @@ public class Users {
 
     @Column(nullable = false, unique = true)
     private String userName;
+
     @Enumerated(EnumType.STRING)
     private Gender userGender;
 
@@ -47,11 +51,24 @@ public class Users {
     private String city;
     private String country;
     private String state;
+
+    @CreationTimestamp
     private Timestamp createdAt;
+
+    @UpdateTimestamp
     private Timestamp updatedAt;
+
+
     private String profilePictureURL;
 
-    public Users(Long userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL) {
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Cart userCart;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus userStatus;
+
+    public Users(Long userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -67,6 +84,8 @@ public class Users {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.profilePictureURL = profilePictureURL;
+        this.userCart = userCart;
+        this.userStatus = userStatus;
     }
 
     public Long getUserId() {
@@ -187,5 +206,21 @@ public class Users {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public Cart getUserCart() {
+        return userCart;
+    }
+
+    public void setUserCart(Cart userCart) {
+        this.userCart = userCart;
+    }
+
+    public UserStatus getUserStatus() {
+        return userStatus;
+    }
+
+    public void setUserStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
     }
 }
