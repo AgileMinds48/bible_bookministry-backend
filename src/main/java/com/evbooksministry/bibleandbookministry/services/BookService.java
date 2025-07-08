@@ -93,10 +93,14 @@ public class BookService {
     private BookDTO addBook(AddBookRequest request,
                                   BookRepository bookRepository, MultipartFile[] bookFiles) throws IOException {
         List<String> bookMedia = new ArrayList<>();
+
+        //todo validate images,
         for (MultipartFile file : bookFiles) {
             String prodFile = cloudinaryService.uploadFile(file);
             bookMedia.add(prodFile);
         }
+
+
 
         Book book = Book.builder()
                 .bookTitle(request.bookTitle())

@@ -43,7 +43,7 @@ public class BookController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/allProducts")
+    @GetMapping("/all-books")
     public ResponseEntity<?> getAllProducts(Pageable pageable) {
         try{
             Page<BookDTO> products = bookService.getAllBooks(pageable);
@@ -54,7 +54,7 @@ public class BookController {
         }
     }
 
-    @GetMapping("/getCategory/{category}")
+    @GetMapping("/get-category/{category}")
     public ResponseEntity<?> getByCategory(@PathVariable String category, Pageable pageable) {
         try{
 
@@ -67,7 +67,7 @@ public class BookController {
         }
     }
 
-    @DeleteMapping("/remove-product/{productId}")
+    @DeleteMapping("/remove-book/{productId}")
     public ResponseEntity<?> removeProduct(@PathVariable UUID productId) {
         try {
             bookService.deleteProduct(productId);

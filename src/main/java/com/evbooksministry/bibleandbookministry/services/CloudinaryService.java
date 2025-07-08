@@ -22,7 +22,7 @@ public class CloudinaryService {
             return (String) uploadResult.get("url");
         }catch (Exception e){
             e.printStackTrace();
+            return e.toString();
         }
-        return null;
     }
 }
