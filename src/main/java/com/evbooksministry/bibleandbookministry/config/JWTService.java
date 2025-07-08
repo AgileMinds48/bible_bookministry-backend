@@ -16,6 +16,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -30,23 +31,23 @@ public class JWTService {
     }
 
 
-    public String generateRefreshToken(String username, UserRole role, Long userID) {
+    public String generateRefreshToken(String username, UserRole role, UUID userID) {
         long refreshTokenExp = 15552000000L;
         return generateToken(username, refreshTokenExp, role, userID);
     }
 
-    public String generateAccessToken(String username, UserRole role, Long userId) {
+    public String generateAccessToken(String username, UserRole role, UUID userId) {
         long accessTokenExpirationTime = 15552000000L;
         return generateToken(username, accessTokenExpirationTime, role, userId);
     }
 
-    public String generateToken(String username, long expirationTime, UserRole role, Long userId) {
+    public String generateToken(String username, long expirationTime, UserRole role, UUID userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
 
         Map<String, Object> claims = new HashMap<>();
         if (user.getUserRole().equals(UserRole.ADMIN)) {
-            claims.put("adminId", user.getUserRole());
+            claims.put("adminId", user.getUserId().toString());
         } else if (user.getUserRole().equals(UserRole.CUSTOMER)) {
             claims.put("customerId", user.getUserId().toString());
         }
@@ -64,18 +65,18 @@ public class JWTService {
                 .compact();
     }
 
-    public Long extractAdminId(String token) {
+    public UUID extractAdminId(String token) {
         Claims claims = extractAllClaim(token);
         if (claims.containsKey("adminId")) {
-            return claims.get("adminId", Long.class);
+            return UUID.fromString(claims.get("adminId", String.class));
         }
         return null;
     }
 
-    public Long extractCustomerId(String token) {
+    public UUID extractCustomerId(String token) {
         Claims claims = extractAllClaim(token);
         if (claims.containsKey("customerId")) {
-            return claims.get("customerId", Long.class);
+            return claims.get("customerId", UUID.class);
         }
         return null;
     }
@@ -123,13 +124,13 @@ public class JWTService {
                 .get("role", String.class);
     }
 
-    public Long getCustomerId(HttpServletRequest request) {
+    public UUID getCustomerId(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String userToken = authHeader.substring(7);
         return extractCustomerId(userToken);
     }
 
-    public Long getAdminId(HttpServletRequest request) {
+    public UUID getAdminId(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String userToken = authHeader.substring(7);
         return extractAdminId(userToken);

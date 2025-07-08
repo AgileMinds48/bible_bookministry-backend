@@ -63,8 +63,8 @@ public class APIExceptionHandler {
         return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ProductNotFound.class)
-    public ResponseEntity<?> handleProductNotFoundException(HttpServletRequest request){
+    @ExceptionHandler(BookNotFound.class)
+    public ResponseEntity<?> handleBookNotFoundException(HttpServletRequest request){
         APIException apiException = new APIException(
                 "error",
                 HttpStatus.NOT_FOUND.value(),
@@ -119,7 +119,7 @@ public class APIExceptionHandler {
                 HttpStatus.UNAUTHORIZED.value(),
                 new APIException.ApiError(
                         HttpStatus.UNAUTHORIZED,
-                        "User entered wrong credentials",
+                        "You entered wrong credentials",
                         Timestamp.from(Instant.now()),
                         request.getRequestURI()
                 ),
@@ -127,4 +127,38 @@ public class APIExceptionHandler {
         );
         return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(value = {OrderNotFound.class})
+    public ResponseEntity<?> handleOrderNotFoundException(HttpServletRequest request){
+        APIException apiException = new APIException(
+                "error",
+                HttpStatus.NOT_FOUND.value(),
+                new APIException.ApiError(
+                        HttpStatus.NOT_FOUND,
+                        "Order not found",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestId()
+        );
+        return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {UnAuthorizedAddition.class})
+    public ResponseEntity<?> handleUnauthorizedException(HttpServletRequest request){
+        APIException apiException = new APIException(
+                "error",
+                HttpStatus.UNAUTHORIZED.value(),
+                new APIException.ApiError(
+                        HttpStatus.UNAUTHORIZED,
+                        "A customer cannot add a new book",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestId()
+        );
+        return new ResponseEntity<>(apiException, HttpStatus.UNAUTHORIZED);
+    }
+
+
 }

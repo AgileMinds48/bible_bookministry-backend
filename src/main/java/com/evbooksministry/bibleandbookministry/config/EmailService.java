@@ -35,8 +35,8 @@ public class EmailService {
             String htmlContent = templateEngine.process(template, context);
 
             helper.setFrom(appEmail);
-            helper.setTo(request.getRecipient());
-            helper.setSubject(request.getSubject());
+            helper.setTo(request.recipient());
+            helper.setSubject(request.subject());
             helper.setText(htmlContent, true);
 
             System.out.println("email: " + htmlContent);

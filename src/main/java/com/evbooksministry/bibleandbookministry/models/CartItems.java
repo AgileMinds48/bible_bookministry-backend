@@ -3,14 +3,15 @@ package com.evbooksministry.bibleandbookministry.models;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 public class CartItems {
     @Id
     @GeneratedValue(
-            strategy = GenerationType.AUTO
+            strategy = GenerationType.UUID
     )
-    private Long cartItemId;
+    private UUID cartItemId;
 
     @ManyToOne
     @JoinColumn(name = "cart_Id")
@@ -25,11 +26,11 @@ public class CartItems {
     private BigDecimal price;
 
 
-    public Long getCartItemId() {
+    public UUID getCartItemId() {
         return cartItemId;
     }
 
-    public void setCartItemId(Long cartItemId) {
+    public void setCartItemId(UUID cartItemId) {
         this.cartItemId = cartItemId;
     }
 
@@ -63,5 +64,16 @@ public class CartItems {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "CartItems{" +
+                "cartItemId=" + cartItemId +
+                ", cart=" + cart +
+                ", book=" + book +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}';
     }
 }

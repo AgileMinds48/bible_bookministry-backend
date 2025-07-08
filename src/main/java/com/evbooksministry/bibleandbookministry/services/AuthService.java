@@ -73,30 +73,31 @@ public class AuthService implements AuthServiceInterface {
 
     @Override
     public RegistrationResponse userRegistration(UserDTO registrationDTO) {
-        Optional <Users> existingUser = userRepository.findByEmail(registrationDTO.getEmail());
-        if (existingUser.isPresent()){
+        Optional<Users> existingUser = userRepository.findByEmail(registrationDTO.email());
+        if (existingUser.isPresent()) {
             throw new UserAlreadyExists();
         }
 
         Users newUser = Users.builder()
-                .firstName(registrationDTO.getFirstName())
-                .lastName(registrationDTO.getLastName())
-                .userName(registrationDTO.getUserName())
-                .userGender(registrationDTO.getUserGender())
-                .password(passwordEncoder.encode(registrationDTO.getPassword()))
-                .email(registrationDTO.getEmail())
-                .phoneNumber(registrationDTO.getPhoneNumber())
-                .userRole(registrationDTO.getUserRole())
-                .city(registrationDTO.getCity())
-                .country(registrationDTO.getCountry())
-                .state(registrationDTO.getState())
+                .firstName(registrationDTO.firstName())
+                .lastName(registrationDTO.lastName())
+                .userName(registrationDTO.userName())
+                .userGender(registrationDTO.userGender())
+                .password(passwordEncoder.encode(registrationDTO.password()))
+                .email(registrationDTO.email())
+                .phoneNumber(registrationDTO.phoneNumber())
+                .userRole(registrationDTO.userRole())
+                .city(registrationDTO.city())
+                .country(registrationDTO.country())
+                .state(registrationDTO.state())
                 .createdAt(Timestamp.from(Instant.now()))
                 .updatedAt(Timestamp.from(Instant.now()))
                 .profilePictureURL(
-                        registrationDTO.getProfilePictureURL() == null ?
-                             "no picture" :
-                        registrationDTO.getProfilePictureURL()
+                        registrationDTO.profilePictureURL() == null ?
+                                "no picture" :
+                                registrationDTO.profilePictureURL()
                 )
+                .isActive(true)
                 .build();
         userRepository.save(newUser);
         return new RegistrationResponse(
@@ -106,5 +107,4 @@ public class AuthService implements AuthServiceInterface {
         );
 
     }
-
 }

@@ -2,29 +2,45 @@ package com.evbooksministry.bibleandbookministry.models;
 
 import jakarta.persistence.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 public class Cart {
 
     @Id
     @GeneratedValue(
-            strategy = GenerationType.AUTO
+            strategy = GenerationType.UUID
     )
-    private Long cartId;
+    private UUID cartId;
 
-    @OneToOne(mappedBy = "userCart", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private Users users;
 
     @OneToMany
     private Set<CartItems> cartItems;
 
+    private Timestamp createdOn;
 
-    public Long getCartId() {
+    public Cart(Users users, Set<CartItems> cartItems) {
+        this.cartId = cartId;
+        this.users = users;
+        this.cartItems = cartItems;
+        this.createdOn = Timestamp.from(Instant.now());
+    }
+
+    public Cart() {
+
+    }
+
+
+    public UUID getCartId() {
         return cartId;
     }
 
-    public void setCartId(Long cartId) {
+    public void setCartId(UUID cartId) {
         this.cartId = cartId;
     }
 
@@ -42,5 +58,9 @@ public class Cart {
 
     public void setCartItems(Set<CartItems> cartItems) {
         this.cartItems = cartItems;
+    }
+
+    public Timestamp getCreatedOn() {
+        return createdOn;
     }
 }

@@ -53,6 +53,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         String token = getTokenFromCookie(request.getCookies());
+        System.out.println("token from cookie: " + token);
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
@@ -67,6 +68,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 String role = jwtService.extractRole(token);
 
                 List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+                System.out.println("assigned authorities: " + authorities);
 
                 if (jwtService.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
