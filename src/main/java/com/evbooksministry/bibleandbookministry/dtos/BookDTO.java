@@ -4,6 +4,7 @@ import com.evbooksministry.bibleandbookministry.enums.BookCategory;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 public record BookDTO(
@@ -17,6 +18,7 @@ public record BookDTO(
         Timestamp updatedOn,
         Integer amountSold,
         BookCategory bookCategory,
-        Integer amountInStock
+        Integer amountInStock,
+        List<String> media
 ) {
 }
