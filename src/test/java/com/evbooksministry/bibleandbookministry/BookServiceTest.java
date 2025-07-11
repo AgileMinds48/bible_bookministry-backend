@@ -1,16 +1,3 @@
-/*
- * Copyright (c) 2024. EV Books Ministry
- *
- * Unit tests for the BookService class.
- *
- * This test class uses Mockito to mock dependencies and validate the behavior of the BookService methods.
- * Each test method is designed to verify a specific functionality, ensuring that the service logic
- * interacts correctly with its dependencies and produces the expected results.
- *
- * Author: [Your Name or Team]
- * Date: [Today's Date]
- */
-
 package com.evbooksministry.bibleandbookministry;
 
 import com.evbooksministry.bibleandbookministry.dtos.AddBookRequest;
