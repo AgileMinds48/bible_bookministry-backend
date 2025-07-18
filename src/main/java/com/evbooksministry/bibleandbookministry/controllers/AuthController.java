@@ -56,4 +56,19 @@ public class AuthController {
                 HttpStatus.OK
         );
     }
+
+    @PostMapping("/v2/signup")
+    public ResponseEntity<?> userSignupTwo(
+            @RequestPart("userInfo") String apiRequest
+            ) throws JsonProcessingException {
+        UserDTO registrationRequest = objectMapper.readValue(
+                apiRequest,
+                UserDTO.class
+        );
+        return new ResponseEntity<>(
+                authService.userRegistration(registrationRequest),
+                HttpStatus.OK
+        );
+    }
+
 }

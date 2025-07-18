@@ -6,6 +6,7 @@ import com.evbooksministry.bibleandbookministry.dtos.LoginRequest;
 import com.evbooksministry.bibleandbookministry.dtos.LoginResponse;
 import com.evbooksministry.bibleandbookministry.dtos.RegistrationResponse;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
+import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
@@ -86,7 +87,7 @@ public class AuthService implements AuthServiceInterface {
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
                 .phoneNumber(registrationDTO.phoneNumber())
-                .userRole(registrationDTO.userRole())
+                .userRole(UserRole.CUSTOMER)
                 .city(registrationDTO.city())
                 .country(registrationDTO.country())
                 .state(registrationDTO.state())
