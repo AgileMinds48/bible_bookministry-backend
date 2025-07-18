@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers("/api/v1/auth/signup","/api/v1/auth/login","/api/v1/admin/register",
+                                .requestMatchers("/api/v1/auth/signup","/api/v1/auth/login","/api/v1/admin/register","/api/v1/auth/v2/signup",
                                         "/swagger-ui/**", "/v3/api-docs/**", "/api/v1/webhook", "/api/v1/books/all-books", "/api/v1/webhook")
                                 .permitAll()
                                 .requestMatchers("/api/v1/order/update-status", "/api/v1/admin/*", "/api/v1/admin/get-user/**")
