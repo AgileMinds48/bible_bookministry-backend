@@ -164,7 +164,8 @@ public class OrderService {
         orderRepository.save(customerOrders);
 
         book.setAmountSold(request.quantity());
-        book.setAmountInStock(book.getAmountInStock() - request.quantity() );
+        book.setAmountInStock(book.getAmountInStock() - request.quantity());
+        bookRepository.save(book);
 
         return paymentService.processPayment(user.getEmail(), bookPrice);
     }

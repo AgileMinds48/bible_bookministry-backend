@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import com.evbooksministry.bibleandbookministry.enums.UserStatus;
 
 @Service
 public class AdminService {
@@ -61,17 +62,27 @@ public class AdminService {
     }
 
     public UserDTO registerAdmin(AdminDTO admin) {
-        Users user = new Users();
-        user.setEmail(admin.email());
-        user.setUserName(admin.userName());
-        user.setPhoneNumber(admin.phone());
-        user.setUserRole(UserRole.ADMIN);
-        user.setPassword(passwordEncoder.encode(admin.password()));
-        user.setFirstName(admin.firstname());
-        user.setLastName(admin.lastname());
-        user.setActive(true);
+        Users user = new Users(
+            null, // userId (auto-generated)
+            admin.firstname(), // firstName
+            admin.lastname(), // lastName
+            admin.userName(), // userName
+            null, // userGender (set to null or Gender.MALE/FEMALE if available)
+            passwordEncoder.encode(admin.password()), // password
+            admin.email(), // email
+            admin.phone(), // phoneNumber
+            UserRole.ADMIN, // userRole
+            null, // city
+            null, // country
+            null, // state
+            null, // createdAt (auto-generated)
+            null, // updatedAt (auto-generated)
+            null, // profilePictureURL
+            null, // userCart
+            UserStatus.ACTIVE, // userStatus
+            true // isActive
+        );
         userRepository.save(user);
-
         return userMapper.userEntityToUserDTO(user);
     }
 }
