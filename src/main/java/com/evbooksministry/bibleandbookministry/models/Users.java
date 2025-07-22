@@ -73,7 +73,9 @@ public class Users {
 
     private boolean isActive;
 
-    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
+    private boolean isEmailValid;
+
+    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive, boolean isEmailValid) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -92,6 +94,7 @@ public class Users {
         this.userCart = userCart;
         this.userStatus = userStatus;
         this.isActive = isActive;
+        this.isEmailValid = isEmailValid;
     }
 
     public UUID getUserId() {
@@ -108,6 +111,14 @@ public class Users {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public boolean isEmailValid() {
+        return isEmailValid;
+    }
+
+    public void setEmailValid(boolean emailValid) {
+        isEmailValid = emailValid;
     }
 
     public String getLastName() {

@@ -1,5 +1,6 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class CartItems {
 
     @ManyToOne
     @JoinColumn(name = "cart_Id")
+    @JsonIgnore
     private Cart cart;
 
     @ManyToOne

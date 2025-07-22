@@ -76,7 +76,7 @@ public class JWTService {
     public UUID extractCustomerId(String token) {
         Claims claims = extractAllClaim(token);
         if (claims.containsKey("customerId")) {
-            return claims.get("customerId", UUID.class);
+            return UUID.fromString(claims.get("customerId", String.class));
         }
         return null;
     }

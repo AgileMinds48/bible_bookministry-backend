@@ -34,7 +34,8 @@ public class BookService {
     public BookService(BookRepository bookRepository,
                        CloudinaryService cloudinaryService,
                        ObjectMapper objectMapper,
-                       UserRepository userRepository, BookMapper bookMapper) {
+                       UserRepository userRepository,
+                       BookMapper bookMapper) {
         this.bookRepository = bookRepository;
         this.cloudinaryService = cloudinaryService;
         this.objectMapper = objectMapper;
