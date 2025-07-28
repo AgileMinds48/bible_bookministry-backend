@@ -70,6 +70,7 @@ public class AdminService {
         user.setFirstName(admin.firstname());
         user.setLastName(admin.lastname());
         user.setActive(true);
+        user.setEmailValid(true);
         userRepository.save(user);
 
         return userMapper.userEntityToUserDTO(user);
