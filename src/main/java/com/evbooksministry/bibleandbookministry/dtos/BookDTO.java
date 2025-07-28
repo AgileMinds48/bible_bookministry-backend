@@ -10,6 +10,7 @@ public record BookDTO(
         UUID bookId,
         String bookTitle,
         String bookDescription,
+        String bookAuthor,
         BigDecimal bookPrice,
         Integer quantity,
         BigDecimal bookValue,
