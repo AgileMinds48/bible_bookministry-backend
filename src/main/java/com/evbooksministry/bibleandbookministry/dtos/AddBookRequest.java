@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 public record AddBookRequest(
         String bookTitle,
         String bookDescription,
+        String bookAuthor,
         BigDecimal bookPrice,
         Integer quantity,
         BigDecimal bookValue,

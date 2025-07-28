@@ -1,13 +1,12 @@
 package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.config.JWTService;
+import com.evbooksministry.bibleandbookministry.config.OTPService;
 import com.evbooksministry.bibleandbookministry.config.UserPrincipal;
-import com.evbooksministry.bibleandbookministry.dtos.LoginRequest;
-import com.evbooksministry.bibleandbookministry.dtos.LoginResponse;
-import com.evbooksministry.bibleandbookministry.dtos.RegistrationResponse;
-import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
+import com.evbooksministry.bibleandbookministry.dtos.*;
+import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
+import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.serviceInterfaces.AuthServiceInterface;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthService implements AuthServiceInterface {
@@ -30,14 +30,16 @@ public class AuthService implements AuthServiceInterface {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final OTPService oTPService;
 
     public AuthService(JWTService jwtService,
                        UserRepository userRepository,
-                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, OTPService oTPService) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.oTPService = oTPService;
     }
 
 
@@ -79,6 +81,10 @@ public class AuthService implements AuthServiceInterface {
             throw new UserAlreadyExists();
         }
 
+        if (!validateEmailString(registrationDTO.email())){
+            throw new InvalidEmail();
+        }
+
         Users newUser = Users.builder()
                 .firstName(registrationDTO.firstName())
                 .lastName(registrationDTO.lastName())
@@ -87,7 +93,7 @@ public class AuthService implements AuthServiceInterface {
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
                 .phoneNumber(registrationDTO.phoneNumber())
-                .userRole(UserRole.CUSTOMER)
+                .userRole(registrationDTO.userRole())
                 .city(registrationDTO.city())
                 .country(registrationDTO.country())
                 .state(registrationDTO.state())
@@ -99,6 +105,7 @@ public class AuthService implements AuthServiceInterface {
                                 registrationDTO.profilePictureURL()
                 )
                 .isActive(true)
+                .isEmailValid(false)
                 .build();
         userRepository.save(newUser);
         return new RegistrationResponse(
@@ -107,5 +114,53 @@ public class AuthService implements AuthServiceInterface {
 
         );
 
+    }
+
+    public EmailValidationResponse sendValidationEmail(RequestEmailValidation request){
+        Optional<Users> unverifiedUser = userRepository.findByUserName(request.username());
+
+        if (unverifiedUser.isEmpty()){
+            throw new UserNotFound();
+        }
+        Users user = unverifiedUser.get();
+        oTPService.generateAndStoreOTP(user.getEmail());
+        return new EmailValidationResponse(
+                true,
+                "OTP sent via email."
+        );
+    }
+
+    public EmailValidationResponse validateUserEmail(EmailValidationRequest request){
+        Optional<Users> user = userRepository.findByEmail(request.email());
+        if (!oTPService.verifyOTP(request.email(), request.otp())){
+            return new EmailValidationResponse(
+                    false,
+                    "Invalid email or OTP. Please try again."
+            );
+        }
+        if (user.isPresent()){
+            Users validUser = user.get();
+            validUser.setEmailValid(true);
+            userRepository.save(validUser);
+            return new EmailValidationResponse(
+                    true,
+                    "User email verified successfully."
+            );
+        }
+        throw new UserNotFound();
+    }
+
+
+
+    private boolean validateEmailString(String email){
+        String regexPattern = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
+                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+        return patternMatches(email,regexPattern);
+    }
+
+    private boolean patternMatches(String email, String regexPattern){
+        return Pattern.compile(regexPattern)
+                .matcher(email)
+                .matches();
     }
 }

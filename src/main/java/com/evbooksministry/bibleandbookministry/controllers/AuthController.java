@@ -4,6 +4,9 @@ package com.evbooksministry.bibleandbookministry.controllers;
 import com.evbooksministry.bibleandbookministry.config.JWTService;
 import com.evbooksministry.bibleandbookministry.dtos.LoginRequest;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
+import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
+import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
+import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.services.AuthService;
 import com.evbooksministry.bibleandbookministry.services.CloudinaryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -44,17 +47,23 @@ public class AuthController {
             @RequestPart("userInfo") String apiRequest,
             @RequestPart("userImage")MultipartFile userImage
             ) throws JsonProcessingException {
-        UserDTO registrationRequest = objectMapper.readValue(
-                apiRequest,
-                UserDTO.class
-        );
-        String userImageURL =
-                cloudinaryService.uploadFile(userImage);
-        registrationRequest.newProfilePictureURL(userImageURL);
-        return new ResponseEntity<>(
-                authService.userRegistration(registrationRequest),
-                HttpStatus.OK
-        );
+        try {
+            UserDTO registrationRequest = objectMapper.readValue(
+                    apiRequest,
+                    UserDTO.class
+            );
+            String userImageURL =
+                    cloudinaryService.uploadFile(userImage);
+            registrationRequest.newProfilePictureURL(userImageURL);
+            return new ResponseEntity<>(
+                    authService.userRegistration(registrationRequest),
+                    HttpStatus.OK
+            );
+        } catch (UserAlreadyExists e) {
+            throw new UserNotFound();
+        } catch (InvalidEmail e){
+            throw new InvalidEmail();
+        }
     }
 
     @PostMapping("/v2/signup")

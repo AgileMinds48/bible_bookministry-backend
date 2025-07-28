@@ -1,6 +1,7 @@
 package com.evbooksministry.bibleandbookministry.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -19,9 +20,10 @@ public class Cart {
     @OneToOne(cascade = CascadeType.ALL)
     private Users users;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItems> cartItems;
 
+    @CreationTimestamp
     private Timestamp createdOn;
 
     public Cart(Users users, Set<CartItems> cartItems) {

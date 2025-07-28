@@ -6,7 +6,7 @@ import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
 import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
-import com.evbooksministry.bibleandbookministry.exceptions.UnAuthorizedAddition;
+import com.evbooksministry.bibleandbookministry.exceptions.UnauthorizedAction;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.models.Users;
@@ -87,7 +87,7 @@ public class AdminController {
 
             UserRole userRole = user.getUserRole();
             if (userRole == UserRole.CUSTOMER) {
-                throw new UnAuthorizedAddition();
+                throw new UnauthorizedAction();
             }
             AddBookRequest request = objectMapper.readValue(addBookRequest, AddBookRequest.class);
             System.out.println("new book: " + request);

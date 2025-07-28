@@ -34,7 +34,8 @@ public class BookService {
     public BookService(BookRepository bookRepository,
                        CloudinaryService cloudinaryService,
                        ObjectMapper objectMapper,
-                       UserRepository userRepository, BookMapper bookMapper) {
+                       UserRepository userRepository,
+                       BookMapper bookMapper) {
         this.bookRepository = bookRepository;
         this.cloudinaryService = cloudinaryService;
         this.objectMapper = objectMapper;
@@ -106,6 +107,7 @@ public class BookService {
                 .bookTitle(request.bookTitle())
                 .bookDescription(request.bookDescription())
                 .bookPrice(request.bookPrice())
+                .bookAuthor(request.bookAuthor())
                 .quantity(request.quantity())
                 .amountInStock(request.amountInStock())
                 .isAvailable(true)
@@ -127,7 +129,7 @@ public class BookService {
                 .orElseThrow(BookNotFound::new);
 
         switch (request.field().toLowerCase().trim()) {
-            case "bookTitle"-> {
+            case "booktitle" -> {
                 book.setBookTitle(request.value().toString());
                 bookRepository.save(book);
             }
@@ -144,6 +146,11 @@ public class BookService {
 
             case "category"-> {
                 book.setBookCategory(objectMapper.convertValue(request.value().toString(), BookCategory.class));
+                bookRepository.save(book);
+            }
+
+            case "author" ->{
+                book.setBookAuthor(request.value().toString());
                 bookRepository.save(book);
             }
 
@@ -170,6 +177,7 @@ public class BookService {
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(BookNotFound::new);
         book.setBookTitle(request.bookTitle());
+        book.setBookAuthor(request.bookAuthor());
         book.setBookDescription(request.bookDescription());
         book.setBookPrice(request.bookPrice());
         book.setBookCategory(request.bookCategory());

@@ -34,6 +34,10 @@ public class Book {
     @Column(nullable = false)
     private String bookTitle;
 
+    @Size(max = 100)
+    @Column(nullable = false)
+    private String bookAuthor;
+
     @Size(max = 255)
     @Column(nullable = false)
     private String bookDescription;
@@ -79,10 +83,10 @@ public class Book {
                 this.bookPrice.multiply(BigDecimal.valueOf(this.quantity));
     }
 
-
-    public Book(UUID bookId, String bookTitle, String bookDescription, BigDecimal bookPrice, Integer quantity, BigDecimal bookValue, Integer amountSold, Integer amountInStock, boolean isAvailable, Timestamp createdOn, Timestamp updatedOn, List<String> media, BookCategory bookCategory) {
+    public Book(UUID bookId, String bookTitle, String bookAuthor, String bookDescription, BigDecimal bookPrice, Integer quantity, BigDecimal bookValue, Integer amountSold, Integer amountInStock, boolean isAvailable, Timestamp createdOn, Timestamp updatedOn, List<String> media, BookCategory bookCategory) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
+        this.bookAuthor = bookAuthor;
         this.bookDescription = bookDescription;
         this.bookPrice = bookPrice;
         this.quantity = quantity;
@@ -201,5 +205,13 @@ public class Book {
 
     public void setBookCategory(BookCategory bookCategory) {
         this.bookCategory = bookCategory;
+    }
+
+    public String getBookAuthor() {
+        return bookAuthor;
+    }
+
+    public void setBookAuthor(String bookAuthor) {
+        this.bookAuthor = bookAuthor;
     }
 }

@@ -8,6 +8,7 @@ import java.util.UUID;
 public record UpdateBook(
         UUID bookId,
         BookCategory bookCategory,
+        String bookAuthor,
         String bookDescription,
         String bookTitle,
         BigDecimal bookPrice,
@@ -19,6 +20,7 @@ public record UpdateBook(
         return new UpdateBook(
                 bookId,
                 this.bookCategory,
+                this.bookAuthor,
                 this.bookDescription,
                 this.bookTitle,
                 this.bookPrice,

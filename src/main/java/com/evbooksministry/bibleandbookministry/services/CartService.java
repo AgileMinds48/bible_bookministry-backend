@@ -3,6 +3,7 @@ package com.evbooksministry.bibleandbookministry.services;
 import com.evbooksministry.bibleandbookministry.dtos.AddOrRemoveFromCartRequest;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.EmptyCart;
+import com.evbooksministry.bibleandbookministry.exceptions.InsufficientBooks;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFoundException;
 import com.evbooksministry.bibleandbookministry.models.Book;
 import com.evbooksministry.bibleandbookministry.models.Cart;
@@ -55,8 +56,16 @@ public class CartService {
         System.out.println(book);
 
         //throwing an error if product is unavailable
-        if (!book.isAvailable() || book.getAmountInStock() < 1) {
+        if (!book.isAvailable()){
             throw new BookNotFound("The product is not available for sale");
+        }
+
+        if(book.getAmountInStock() < 1){
+            throw new InsufficientBooks();
+        }
+
+        if (request.quantity() > book.getAmountInStock()){
+            throw new InsufficientBooks();
         }
 
 
@@ -83,10 +92,10 @@ public class CartService {
         userRepository.save(user);
         book.setAmountInStock(book.getAmountInStock() - request.quantity());
         book.setAmountSold(request.quantity());
+        bookRepository.saveAndFlush(book);
         //TODO fix amount sold
         System.out.println("Amount sold: " + book.getAmountSold());
         System.out.println("Amount in stock: " + book.getAmountInStock());
-        bookRepository.save(book);
 
 
         return cart.getCartItems();
@@ -97,6 +106,7 @@ public class CartService {
                 .orElseThrow(() -> new UserNotFoundException("User Not Found"));
         Cart cart = users.getUserCart();
 
+        System.out.println("user cart: " + cart.getCartItems());
         Optional<CartItems> items = cart.getCartItems()
                 .stream()
                 .filter(cartItem -> cartItem.getBook()
@@ -112,6 +122,7 @@ public class CartService {
                 .orElseThrow(() -> new UserNotFoundException("User Not Found"));
         Cart cart = users.getUserCart();
         cart.getCartItems().clear();
+        System.out.println("user cart: " + cart.getCartItems());
         cartRepository.save(cart);
     }
 
@@ -143,7 +154,7 @@ public class CartService {
     }
 
     public Set<CartItems> fetchUserCartItems(UUID userId) {
-        return new HashSet<>(cartItemRepository.findCartItemsByCart_Users_UserId(userId));
+        return new HashSet<>(cartItemRepository.findCartItemsByUser(userId));
     }
 }
 
