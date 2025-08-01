@@ -11,9 +11,9 @@ import com.evbooksministry.bibleandbookministry.repositories.CartRepository;
 import com.evbooksministry.bibleandbookministry.repositories.OrderRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.hc.client5.http.utils.Hex;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,18 +29,19 @@ import static com.evbooksministry.bibleandbookministry.enums.OrderStatus.PAID;
 
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 public class PaystackWebhook {
+    static Dotenv dotenv = Dotenv.configure().load();
     private final OrderRepository orderRepository;
-    private static final String API_SECRET_KEY = System.getenv("PAYSTACK_SECRET");
+    private static final String API_SECRET_KEY = dotenv.get("PAYSTACK_SECRET");
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
 
     public PaystackWebhook(OrderRepository orderRepository,
-                                     CartRepository cartRepository,
-                                     UserRepository userRepository,
-                                    EmailService emailService) {
+                           CartRepository cartRepository,
+                           UserRepository userRepository,
+                           EmailService emailService) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
@@ -63,6 +64,7 @@ public class PaystackWebhook {
             System.out.println("Transaction reference: " + reference);
             System.out.println("Transaction id: " + transactionId);
 
+            List<CustomerOrders> orders = orderRepository.findByOrderReference(reference);
             Set<Users> admins = userRepository.findByUserRole(UserRole.ADMIN);
             for (Users admin : admins) {
                 EmailRequest adminAlert = new EmailRequest(
@@ -70,6 +72,7 @@ public class PaystackWebhook {
                         "New Sale"
                 );
                 Context adminContext = new Context();
+                adminContext.setVariable("totalPrice", orders.getFirst().getTotalPrice());
                 emailService.sendEmail(adminAlert, "NewSale", adminContext);
             }
             List<CustomerOrders> order = orderRepository.findByOrderReference(reference);

@@ -18,7 +18,7 @@ import java.time.Instant;
 @ControllerAdvice
 public class APIExceptionHandler {
     @ExceptionHandler(value = {UserNotFoundException.class})
-    public ResponseEntity<?> handleUserNotFoundException(UserNotFound ex, HttpServletRequest request){
+    public ResponseEntity<?> handleUserNotFoundException(HttpServletRequest request){
         APIException apiException = new APIException(
                 "error",
                 HttpStatus.NOT_FOUND.value(),
@@ -30,9 +30,6 @@ public class APIExceptionHandler {
                 ),
                 request.getRequestId()
         );
-        Sentry.setTag("requestId", request.getRequestId());
-        Sentry.setExtra("path", request.getRequestURI());
-        Sentry.captureException(ex);
         return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
     }
 

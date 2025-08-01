@@ -32,6 +32,7 @@ public class CustomerOrders {
 
     private Timestamp updatedAt;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
     private BigDecimal totalPrice;

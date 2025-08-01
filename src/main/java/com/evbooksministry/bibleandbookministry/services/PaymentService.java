@@ -3,12 +3,12 @@ package com.evbooksministry.bibleandbookministry.services;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentRequest;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentResponse;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
-import com.evbooksministry.bibleandbookministry.models.CartItems;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,7 +18,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class PaymentService {
@@ -30,7 +31,8 @@ public class PaymentService {
     private final CartRepository cartRepository;
 
 
-    private final String secretKey = System.getenv("PAYSTACK_SECRET") ;
+    Dotenv dotenv = Dotenv.configure().load();
+    private final String secretKey = dotenv.get("PAYSTACK_SECRET") ;
 
     public PaymentService(RestTemplate restTemplate,
                           PaymentRepository paymentRepository,
