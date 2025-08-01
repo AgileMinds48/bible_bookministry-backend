@@ -4,6 +4,7 @@ import com.evbooksministry.bibleandbookministry.config.JWTService;
 import com.evbooksministry.bibleandbookministry.config.OTPService;
 import com.evbooksministry.bibleandbookministry.config.UserPrincipal;
 import com.evbooksministry.bibleandbookministry.dtos.*;
+import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
@@ -93,7 +94,7 @@ public class AuthService implements AuthServiceInterface {
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
                 .phoneNumber(registrationDTO.phoneNumber())
-                .userRole(registrationDTO.userRole())
+                .userRole(UserRole.CUSTOMER)
                 .city(registrationDTO.city())
                 .country(registrationDTO.country())
                 .state(registrationDTO.state())

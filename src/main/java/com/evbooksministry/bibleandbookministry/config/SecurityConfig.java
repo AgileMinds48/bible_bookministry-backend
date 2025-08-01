@@ -51,7 +51,7 @@ public class SecurityConfig {
                                         "/api/v1/books/update-details",
                                         "/api/v1/books/remove-product/**",
                                         "/api/v1/cart/**",
-                                        "/api/v1/order/customer/get-order")
+                                        "/api/v1/order/customer/get-order", "/api/v1/user/**")
                                 .hasAnyRole("ADMIN", "CUSTOMER")
                 )
                 .httpBasic(Customizer.withDefaults())

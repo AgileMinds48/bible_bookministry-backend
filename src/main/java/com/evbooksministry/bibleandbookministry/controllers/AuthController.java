@@ -55,6 +55,7 @@ public class AuthController {
             String userImageURL =
                     cloudinaryService.uploadFile(userImage);
             registrationRequest.newProfilePictureURL(userImageURL);
+            System.out.println("profile pic url: " + userImageURL);
             return new ResponseEntity<>(
                     authService.userRegistration(registrationRequest),
                     HttpStatus.OK

@@ -17,10 +17,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CartService {
@@ -101,7 +98,7 @@ public class CartService {
         return cart.getCartItems();
     }
 
-    public void removeItemFromCart(AddOrRemoveFromCartRequest request, UUID userID) {
+    public Set<CartItems> removeItemFromCart(AddOrRemoveFromCartRequest request, UUID userID) {
         Users users = userRepository.findById(userID)
                 .orElseThrow(() -> new UserNotFoundException("User Not Found"));
         Cart cart = users.getUserCart();
@@ -115,6 +112,7 @@ public class CartService {
         items.ifPresent(item -> cart.getCartItems()
                 .remove(item));
         cartRepository.save(cart);
+        return cart.getCartItems();
     }
 
     public void clearCart(UUID userId) {

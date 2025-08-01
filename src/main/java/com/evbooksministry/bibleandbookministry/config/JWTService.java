@@ -7,6 +7,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -131,5 +132,21 @@ public class JWTService {
         String authHeader = request.getHeader("Authorization");
         String userToken = authHeader.substring(7);
         return extractAdminId(userToken);
+    }
+
+    public UUID extractUserId(HttpServletRequest request){
+        String authToken = getTokenFromCookie(request.getCookies());
+        return extractCustomerId(authToken);
+    }
+
+    private String getTokenFromCookie(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("JWTAccess_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

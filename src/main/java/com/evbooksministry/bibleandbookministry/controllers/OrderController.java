@@ -39,7 +39,7 @@ public class OrderController {
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout() {
-        UUID userId = jwtService.getCustomerId(request);
+        UUID userId = jwtService.extractUserId(request);
         System.out.println("userId from checkout: " + userId);
 
         PaymentResponse response;
@@ -55,7 +55,7 @@ public class OrderController {
 
     @GetMapping("/customer/get-order")
     public ResponseEntity<?> getCustomerOrder() {
-        UUID userID = jwtService.getCustomerId(request);
+        UUID userID = jwtService.extractUserId(request);
         Set<OrderItem> orders = orderService.getBuyerOrder(userID);
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
@@ -63,7 +63,7 @@ public class OrderController {
     @PostMapping("/buy-now")
     public ResponseEntity<?> buyNow(@RequestBody BuyNow buyNow) {
         try{
-            UUID userId = jwtService.getCustomerId(request);
+            UUID userId = jwtService.extractUserId(request);
             BuyNow finalBuyNow = buyNow.newUserId(userId);
             System.out.println("buy now request: " + finalBuyNow);
             return new ResponseEntity<>(orderService.buyNow(finalBuyNow), HttpStatus.OK);
