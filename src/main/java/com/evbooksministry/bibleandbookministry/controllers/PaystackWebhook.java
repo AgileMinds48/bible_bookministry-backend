@@ -13,7 +13,6 @@ import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.hc.client5.http.utils.Hex;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +30,8 @@ import static com.evbooksministry.bibleandbookministry.enums.OrderStatus.PAID;
 @RestController
 @RequestMapping("/api/v1")
 public class PaystackWebhook {
-    static Dotenv dotenv = Dotenv.configure().load();
     private final OrderRepository orderRepository;
-    private static final String API_SECRET_KEY = dotenv.get("PAYSTACK_SECRET");
+    private static final String API_SECRET_KEY = System.getenv("PAYSTACK_SECRET");
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
