@@ -91,8 +91,9 @@ public class BookController {
     }
 
     @GetMapping("/get-book/{bookId}")
-    public ResponseEntity<?> getBook(@PathVariable UUID bookId) {
-        Optional<BookDTO> product = bookService.getBookById(bookId);
+    public ResponseEntity<?> getBook(@PathVariable String bookId) {
+        UUID parsedBookId = UUID.fromString(bookId);
+        Optional<BookDTO> product = bookService.getBookById(parsedBookId);
         if (product.isPresent()) {
             return new ResponseEntity<>(product.get(), HttpStatus.OK);
         }else{
