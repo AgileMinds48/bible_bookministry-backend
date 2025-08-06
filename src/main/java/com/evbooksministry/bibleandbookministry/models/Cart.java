@@ -3,6 +3,7 @@ package com.evbooksministry.bibleandbookministry.models;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Set;
@@ -22,6 +23,9 @@ public class Cart {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItems> cartItems;
+
+
+    private BigDecimal totalPrice;
 
     @CreationTimestamp
     private Timestamp createdOn;
@@ -64,5 +68,13 @@ public class Cart {
 
     public Timestamp getCreatedOn() {
         return createdOn;
+    }
+
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(BigDecimal totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }
