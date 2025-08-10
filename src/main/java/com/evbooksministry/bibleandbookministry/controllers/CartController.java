@@ -73,7 +73,7 @@ public class CartController {
     @GetMapping("/get-items")
     public ResponseEntity<?> getCartItems() {
         UUID userID = extractUserId(request);
-        return ResponseEntity.ok(cartService.fetchUserCartItems(userID));
+        return ResponseEntity.ok(cartService.fetchUserCart(userID));
     }
 
     private UUID extractUserId(HttpServletRequest request){

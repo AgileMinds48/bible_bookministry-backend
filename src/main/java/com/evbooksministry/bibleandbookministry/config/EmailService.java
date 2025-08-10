@@ -1,6 +1,7 @@
 package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.dtos.EmailRequest;
+import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -46,5 +47,16 @@ public class EmailService {
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void sendOrderConfirmation(String userEmail, CustomerOrders order){
+        EmailRequest request = new EmailRequest(
+                userEmail,
+                "Order Confirmation"
+        );
+
+        Context context = new Context();
+        sendEmail(request, "OrderConfirmation", context);
+
     }
 }

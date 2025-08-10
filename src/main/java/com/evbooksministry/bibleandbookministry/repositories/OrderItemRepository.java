@@ -11,6 +11,12 @@ import java.util.UUID;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
 
-    @Query("select o from OrderItem o where o.customerOrders.user.userId = :userId order by o.customerOrders.createdAt")
-    Set<OrderItem> findByUserId(UUID userId);
+/*    @Query("select o from OrderItem o where o.customerOrders.user.userId = :userId order by o.customerOrders.createdAt")
+    Set<OrderItem> findByUserId(UUID userId);*/
+
+    @Query("select o from OrderItem o where o.customerOrderId.customerId = :customerId and o.customerOrderId.orderStatus = 'IN_CART'")
+    Set<OrderItem> getCustomerCart(UUID customerId);
+
+    @Query("select o from OrderItem o where o.customerOrderId.customerId.customerId  = :customerId")
+    Set<OrderItem> findByCustomerId(UUID customerId);
 }

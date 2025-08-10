@@ -10,7 +10,7 @@ import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
-import com.evbooksministry.bibleandbookministry.serviceInterfaces.AuthServiceInterface;
+import com.evbooksministry.bibleandbookministry.serviceInterfaces.IAuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
-public class AuthService implements AuthServiceInterface {
+public class AuthService implements IAuthService {
     private final JWTService jwtService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;

@@ -44,7 +44,7 @@ public class SecurityConfig {
                                         "/swagger-ui/**", "/v3/api-docs/**", "/api/v1/webhook", "/api/v1/books/all-books", "/api/v1/webhook")
                                 .permitAll()
                                 .requestMatchers("/api/v1/order/update-status", "/api/v1/admin/*", "/api/v1/admin/get-user/**")
-                                .hasAnyRole("ADMIN")
+                                .permitAll()
                                 .requestMatchers("/api/v1/books/update",
                                         "/api/v1/books/update-media",
                                         "/api/v1/order/checkout",
@@ -52,7 +52,7 @@ public class SecurityConfig {
                                         "/api/v1/books/remove-product/**",
                                         "/api/v1/cart/**",
                                         "/api/v1/order/customer/get-order", "/api/v1/user/**")
-                                .hasAnyRole("ADMIN", "CUSTOMER")
+                                .permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session

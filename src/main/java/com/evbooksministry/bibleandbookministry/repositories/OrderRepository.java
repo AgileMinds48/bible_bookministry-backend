@@ -6,17 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Repository
 public interface OrderRepository extends JpaRepository<CustomerOrders, UUID> {
 
-    @Query("select c from CustomerOrders c where c.user.userId  = :userId and c.orderStatus = :orderStatus")
+    @Query("select c from CustomerOrders c where c.customerId.user.userId  = :userId and c.orderStatus = :orderStatus")
     Set<CustomerOrders> findByUser_UserIdAndStatus(UUID userId, OrderStatus orderStatus);
 
-    Set<CustomerOrders> findByUser_UserId(UUID buyerID);
+    @Query("select c from CustomerOrders c where c.customerId.customerId = :customerId")
+    CustomerOrders getCustomerOrdersByCustomerId(UUID customerId);
 
-    List<CustomerOrders> findByOrderReference(String orderReference);
+    @Query("select c from CustomerOrders c where c.customerId.customerId = :customerId and c.deleteYn = 'N' ")
+    Set<CustomerOrders> findUserOrders(UUID customerId);
+
 }
