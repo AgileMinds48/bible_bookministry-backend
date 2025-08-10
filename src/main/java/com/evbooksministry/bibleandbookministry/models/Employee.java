@@ -27,7 +27,7 @@ public class Employee {
     public Employee(UUID employeeId, Users user, DeleteYn deleteYn) {
         this.employeeId = employeeId;
         this.user = user;
-        this.deleteYn = deleteYn;
+        this.deleteYn = DeleteYn.N;
     }
 
     public Users getUser() {

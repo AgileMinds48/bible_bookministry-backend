@@ -2,6 +2,7 @@ package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -21,7 +22,8 @@ public class CustomerOrders {
     private Customer customerId;
 
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Set<OrderItem> orderItems;
 
     private Timestamp createdAt;

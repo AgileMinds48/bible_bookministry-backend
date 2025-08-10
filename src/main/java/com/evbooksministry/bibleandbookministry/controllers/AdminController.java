@@ -91,7 +91,7 @@ public class AdminController {
             }
             AddBookRequest request = objectMapper.readValue(addBookRequest, AddBookRequest.class);
             System.out.println("new book: " + request);
-            return new ResponseEntity<>(bookService.addNewBook(request, bookImage), HttpStatus.OK);
+            return new ResponseEntity<>(bookService.addNewBook(request, bookImage, user), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

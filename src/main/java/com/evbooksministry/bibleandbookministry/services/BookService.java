@@ -3,10 +3,14 @@ package com.evbooksministry.bibleandbookministry.services;
 import com.evbooksministry.bibleandbookministry.dtos.*;
 import com.evbooksministry.bibleandbookministry.enums.BookCategory;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
+import com.evbooksministry.bibleandbookministry.exceptions.EmployeeNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidDetails;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.models.Book;
+import com.evbooksministry.bibleandbookministry.models.Employee;
+import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
+import com.evbooksministry.bibleandbookministry.repositories.EmployeeRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.serviceInterfaces.IBookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,17 +35,19 @@ public class BookService implements IBookService {
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
     private final BookMapper bookMapper;
+    private final EmployeeRepository employeeRepository;
 
     public BookService(BookRepository bookRepository,
                        CloudinaryService cloudinaryService,
                        ObjectMapper objectMapper,
                        UserRepository userRepository,
-                       BookMapper bookMapper) {
+                       BookMapper bookMapper, EmployeeRepository employeeRepository) {
         this.bookRepository = bookRepository;
         this.cloudinaryService = cloudinaryService;
         this.objectMapper = objectMapper;
         this.userRepository = userRepository;
         this.bookMapper = bookMapper;
+        this.employeeRepository = employeeRepository;
     }
 
 
@@ -60,9 +66,9 @@ public class BookService implements IBookService {
     }
 
     @Override
-    public BookDTO addNewBook(AddBookRequest request, MultipartFile[] bookImages
+    public BookDTO addNewBook(AddBookRequest request, MultipartFile[] bookImages, Users user
     ) throws IOException {
-        return addBook(request, bookRepository, bookImages);
+        return addBook(request, bookRepository, bookImages, user);
     }
 
 
@@ -101,15 +107,17 @@ public class BookService implements IBookService {
     }
 
     public BookDTO addBook(AddBookRequest request,
-                                  BookRepository bookRepository, MultipartFile[] bookFiles) throws IOException {
+                           BookRepository bookRepository,
+                           MultipartFile[] bookFiles, Users admin) throws IOException {
         List<String> bookMedia = new ArrayList<>();
 
-        //todo validate images,
         for (MultipartFile file : bookFiles) {
             String prodFile = cloudinaryService.uploadFile(file);
             bookMedia.add(prodFile);
         }
 
+        Employee employee = employeeRepository.findEmployeeByUserId(admin.getUserId())
+                .orElseThrow(EmployeeNotFound::new);
 
 
         Book book = Book.builder()
@@ -120,6 +128,7 @@ public class BookService implements IBookService {
                 .quantity(request.quantity())
                 .amountInStock(request.amountInStock())
                 .isAvailable(true)
+                .addedBy(employee)
                 .createdOn(Timestamp.from(Instant.now()))
                 .updatedOn(Timestamp.from(Instant.now()))
                 .media(bookMedia)

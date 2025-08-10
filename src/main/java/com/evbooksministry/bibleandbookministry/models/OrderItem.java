@@ -1,6 +1,8 @@
 package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -14,10 +16,12 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId")
+    @JsonBackReference
     private CustomerOrders customerOrderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bookId")
+    @JsonManagedReference
     private Book bookId;
 
     private Integer quantity;

@@ -1,12 +1,14 @@
 package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.dtos.AddOrRemoveFromCartRequest;
+import com.evbooksministry.bibleandbookministry.dtos.OrderItemDTO;
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.CustomerNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.EmptyCart;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFoundException;
+import com.evbooksministry.bibleandbookministry.mappers.OrderItemMapper;
 import com.evbooksministry.bibleandbookministry.models.*;
 import com.evbooksministry.bibleandbookministry.repositories.*;
 import jakarta.transaction.Transactional;
@@ -16,6 +18,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -24,21 +27,23 @@ public class CartService {
     private final CustomerRepository customerRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final OrderItemMapper orderItemMapper;
 
     public CartService(UserRepository userRepository,
                        BookRepository bookRepository,
                        CustomerRepository customerRepository,
                        OrderRepository orderRepository,
-                       OrderItemRepository orderItemRepository) {
+                       OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
+        this.orderItemMapper = orderItemMapper;
     }
 
     @Transactional
-    public Set<OrderItem> addItemToCart(AddOrRemoveFromCartRequest request, UUID userID) {
+    public Set<OrderItemDTO> addItemToCart(AddOrRemoveFromCartRequest request, UUID userID) {
         Book book = bookRepository.findByBookId(request.bookId())
                 .orElseThrow(BookNotFound::new);
 
@@ -52,6 +57,7 @@ public class CartService {
         try {
             existingOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
         } catch (RuntimeException e) {
+
         }
 
         if (existingOrder != null && existingOrder.getOrderStatus() == OrderStatus.IN_CART) {
@@ -76,11 +82,12 @@ public class CartService {
             }
 
             orderRepository.save(existingOrder);
-            return existingItems;
+            return existingItems.stream()
+                    .map(orderItemMapper::toDTO)
+                    .collect(Collectors.toSet());
         } else {
             Set<OrderItem> customerOrderItems = new HashSet<>();
             OrderItem item = createOrderItem(book, request.quantity());
-            orderItemRepository.save(item);
             customerOrderItems.add(item);
 
             CustomerOrders order = new CustomerOrders();
@@ -88,11 +95,17 @@ public class CartService {
             order.setOrderStatus(OrderStatus.IN_CART);
             order.setOrderReference(UUID.randomUUID().toString());
             order.setOrderItems(customerOrderItems);
-            order.setDeleteYn(DeleteYn.N); // Set default value
+
+            item.setCustomerOrderId(order);
+            orderItemRepository.save(item);
+
+            order.setTotalPrice(item.getTotal());
 
             orderRepository.save(order);
 
-            return customerOrderItems;
+            return customerOrderItems.stream()
+                    .map(orderItemMapper::toDTO)
+                    .collect(Collectors.toSet());
         }
     }
 
@@ -132,24 +145,27 @@ public class CartService {
         orderRepository.save(customerOrder);
         return orderItems;
     }
-
     @Transactional
     public void clearCart(UUID userId) {
-        Users users = userRepository.findById(userId)
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Not Found"));
-        Customer customer = customerRepository.getCustomerByUserId(users.getUserId())
+
+        Customer customer = customerRepository.getCustomerByUserId(user.getUserId())
                 .orElseThrow(CustomerNotFound::new);
 
         CustomerOrders customerOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
 
-        if (customerOrder != null) {
-            if (customerOrder.getOrderItems() != null) {
-                customerOrder.getOrderItems().clear();
-            }
-
-            customerOrder.setDeleteYn(DeleteYn.Y);
-            orderRepository.save(customerOrder);
+        if (customerOrder == null) {
+            throw new EmptyCart("No active cart found for user");
         }
+
+        if (customerOrder.getOrderItems() != null) {
+            customerOrder.getOrderItems().forEach(item -> item.setDeleteYn(DeleteYn.Y));
+            orderItemRepository.saveAll(customerOrder.getOrderItems());
+        }
+
+        customerOrder.setDeleteYn(DeleteYn.Y);
+        orderRepository.save(customerOrder);
     }
 
     public Set<OrderItem> fetchCartItems(UUID userId) {
@@ -181,13 +197,18 @@ public class CartService {
         }
     }
 
-    public Set<OrderItem> fetchUserCart(UUID userId) {
-        Set<OrderItem> cartItems = new HashSet<>(orderItemRepository.getCustomerCart(userId));
+    public Set<OrderItemDTO> fetchUserCart(UUID userId) {
+        Customer customer = customerRepository.getCustomerByUserId(userId)
+                .orElseThrow(CustomerNotFound::new);
+
+        Set<OrderItem> cartItems = new HashSet<>(orderItemRepository.getCustomerCart(customer.getCustomerId()));
 
         if (cartItems.isEmpty()) {
-            throw new EmptyCart("Your cart is empty");
+            return new HashSet<>();
         }
 
-        return cartItems;
+        return cartItems.stream()
+                .map(orderItemMapper::toDTO)
+                .collect(Collectors.toSet());
     }
 }
