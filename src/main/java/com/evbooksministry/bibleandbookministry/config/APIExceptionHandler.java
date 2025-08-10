@@ -3,6 +3,7 @@ package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.exceptions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -80,6 +81,25 @@ public class APIExceptionHandler {
                 new APIException.ApiError(
                         HttpStatus.BAD_REQUEST,
                         "User's session has expired. Please login again",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<?> handleInvalidFormatException(InvalidFormatException ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "error",
+                HttpStatus.BAD_REQUEST.value(),
+                new APIException.ApiError(
+                        HttpStatus.BAD_REQUEST,
+                        "Client sent wrong category",
                         Timestamp.from(Instant.now()),
                         request.getRequestURI()
                 ),

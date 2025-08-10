@@ -2,7 +2,12 @@ package com.evbooksministry.bibleandbookministry.enums;
 
 public enum BookCategory{
     RELIGIOUS("religious"),
-    COMMENTARY("commentary");
+    COMMENTARY("commentary"),
+    CHURCH_HISTORY("Church History"),
+    THEOLOGICAL("Theological"),
+    COMMENTARIES("Commentaries"),
+    BIBLES("Bibles"),
+    CHILDREN("Children");
 
     private final String value;
 
