@@ -119,7 +119,7 @@ public class JWTService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .get("role", String.class);
+                .get("roleId", String.class);
     }
 
     public UUID getCustomerId(HttpServletRequest request) {

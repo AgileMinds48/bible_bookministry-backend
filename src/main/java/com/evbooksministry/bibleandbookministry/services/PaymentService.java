@@ -1,11 +1,13 @@
 package com.evbooksministry.bibleandbookministry.services;
 
+import com.evbooksministry.bibleandbookministry.dtos.PaymentDTO;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentRequest;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentResponse;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.*;
+import com.evbooksministry.bibleandbookministry.serviceInterfaces.IPaymentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
@@ -21,13 +23,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class PaymentService {
+public class PaymentService implements IPaymentService {
     private final RestTemplate restTemplate;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final CartItemsRepository cartItemRepository;
-    private final CartRepository cartRepository;
+
 
 
     private final String secretKey = System.getenv("PAYSTACK_SECRET") ;
@@ -35,15 +36,11 @@ public class PaymentService {
     public PaymentService(RestTemplate restTemplate,
                           PaymentRepository paymentRepository,
                           UserRepository userRepository,
-                          OrderRepository orderRepository,
-                          CartItemsRepository cartItemRepository,
-                          CartRepository cartRepository) {
+                          OrderRepository orderRepository) {
         this.restTemplate = restTemplate;
         this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.cartRepository = cartRepository;
     }
 
     public PaymentResponse processPayment(String userEmail, BigDecimal totalAmount) throws JsonProcessingException {
@@ -92,5 +89,15 @@ public class PaymentService {
     }
 
     public void refundPayment(UUID paymentId) {
+    }
+
+    @Override
+    public PaymentDTO getPayment(UUID paymentId) {
+        return null;
+    }
+
+    @Override
+    public void deletePayment(UUID paymentId) {
+
     }
 }

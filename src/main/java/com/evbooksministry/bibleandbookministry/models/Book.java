@@ -2,6 +2,7 @@ package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.converter.StringListConverter;
 import com.evbooksministry.bibleandbookministry.enums.BookCategory;
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -34,6 +35,11 @@ public class Book {
     @Size(max = 255)
     @Column(nullable = false)
     private String bookTitle;
+
+
+    @ManyToOne
+    @JoinColumn(name = "employeeId")
+    private Employee addedBy;
 
     @Size(max = 100)
     @Column(nullable = false)
@@ -69,11 +75,16 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private BookCategory bookCategory;
 
+    @Enumerated(EnumType.STRING)
+    private DeleteYn deleteYn;
+
     @PrePersist
     protected void onCreate(){
         this.createdOn = Timestamp.from(Instant.now());
         this.bookValue = this.bookPrice.multiply(BigDecimal.valueOf(this.quantity));
         this.amountSold = 0;
+        this.deleteYn = DeleteYn.N;
+        this.isAvailable = true;
     }
 
     @PreUpdate
@@ -83,9 +94,25 @@ public class Book {
                 this.bookPrice.multiply(BigDecimal.valueOf(this.quantity));
     }
 
-    public Book(UUID bookId, String bookTitle, String bookAuthor, String bookDescription, BigDecimal bookPrice, Integer quantity, BigDecimal bookValue, Integer amountSold, Integer amountInStock, boolean isAvailable, Timestamp createdOn, Timestamp updatedOn, List<String> media, BookCategory bookCategory) {
+    public Book(UUID bookId,
+                String bookTitle,
+                Employee addedBy,
+                String bookAuthor,
+                String bookDescription,
+                BigDecimal bookPrice,
+                Integer quantity,
+                BigDecimal bookValue,
+                Integer amountSold,
+                Integer amountInStock,
+                boolean isAvailable,
+                Timestamp createdOn,
+                Timestamp updatedOn,
+                List<String> media,
+                BookCategory bookCategory,
+                DeleteYn deleteYn) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
+        this.addedBy = addedBy;
         this.bookAuthor = bookAuthor;
         this.bookDescription = bookDescription;
         this.bookPrice = bookPrice;
@@ -98,6 +125,23 @@ public class Book {
         this.updatedOn = updatedOn;
         this.media = media;
         this.bookCategory = bookCategory;
+        this.deleteYn = deleteYn;
+    }
+
+    public Employee getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(Employee addedBy) {
+        this.addedBy = addedBy;
+    }
+
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
+    }
+
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
     }
 
     public Book() {

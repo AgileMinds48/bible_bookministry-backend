@@ -7,8 +7,10 @@ import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.mappers.UserMapper;
+import com.evbooksministry.bibleandbookministry.models.Employee;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
+import com.evbooksministry.bibleandbookministry.repositories.EmployeeRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +29,15 @@ public class AdminService {
     private final UserMapper userMapper;
     private final BookMapper bookMapper;
     private final BookService bookService;
+    private final EmployeeRepository employeeRepository;
 
-    public AdminService(UserRepository userRepository, EmailService emailService, BookRepository bookRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, BookMapper bookMapper, BookService bookService) {
+    public AdminService(UserRepository userRepository,
+                        EmailService emailService,
+                        BookRepository bookRepository,
+                        PasswordEncoder passwordEncoder,
+                        UserMapper userMapper,
+                        BookMapper bookMapper,
+                        BookService bookService, EmployeeRepository employeeRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.bookRepository = bookRepository;
@@ -36,6 +45,7 @@ public class AdminService {
         this.userMapper = userMapper;
         this.bookMapper = bookMapper;
         this.bookService = bookService;
+        this.employeeRepository = employeeRepository;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -72,6 +82,10 @@ public class AdminService {
         user.setActive(true);
         user.setEmailValid(true);
         userRepository.save(user);
+
+        Employee employee = new Employee();
+        employee.setUser(user);
+        employeeRepository.save(employee);
 
         return userMapper.userEntityToUserDTO(user);
     }

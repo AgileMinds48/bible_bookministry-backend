@@ -2,7 +2,9 @@ package com.evbooksministry.bibleandbookministry.controllers;
 
 
 import com.evbooksministry.bibleandbookministry.config.JWTService;
+import com.evbooksministry.bibleandbookministry.dtos.EmailValidationRequest;
 import com.evbooksministry.bibleandbookministry.dtos.LoginRequest;
+import com.evbooksministry.bibleandbookministry.dtos.RequestEmailValidation;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
@@ -67,18 +69,13 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/v2/signup")
-    public ResponseEntity<?> userSignupTwo(
-            @RequestPart("userInfo") String apiRequest
-            ) throws JsonProcessingException {
-        UserDTO registrationRequest = objectMapper.readValue(
-                apiRequest,
-                UserDTO.class
-        );
-        return new ResponseEntity<>(
-                authService.userRegistration(registrationRequest),
-                HttpStatus.OK
-        );
+    @PostMapping("/request-validation")
+    public ResponseEntity<?> requestEmailValidation(@RequestBody RequestEmailValidation requestEmailValidation){
+        return new ResponseEntity<>(authService.sendValidationEmail(requestEmailValidation), HttpStatus.OK);
     }
 
+    @PostMapping("/validate-email")
+    public ResponseEntity<?> validateEmail(@RequestBody EmailValidationRequest request){
+        return new ResponseEntity<>(authService.validateUserEmail(request), HttpStatus.OK);
+    }
 }

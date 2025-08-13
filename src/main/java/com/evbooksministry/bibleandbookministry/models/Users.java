@@ -1,31 +1,31 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.Gender;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.enums.UserStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 
 @Builder
 @Entity
-@Table(
-        name = "users", indexes = {
-        @Index(name = "idx_user_email", columnList = "email"),
-        @Index(name = "idx_user_role", columnList = "userRole")
-})
-@RequiredArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID userId;
+
+    @OneToOne
+    @JoinColumn(name = "roleId")
+    private Role roleId;
 
     @Column(nullable = false)
     private String firstName;
@@ -65,8 +65,6 @@ public class Users {
     private String profilePictureURL;
 
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Cart userCart;
 
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
@@ -75,8 +73,17 @@ public class Users {
 
     private boolean isEmailValid;
 
-    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive, boolean isEmailValid) {
+    private DeleteYn deleteYn;
+
+    // One-to-One relationship with Customer
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Customer customer;
+
+
+    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
         this.userId = userId;
+        this.roleId = roleId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
@@ -91,10 +98,27 @@ public class Users {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.profilePictureURL = profilePictureURL;
-        this.userCart = userCart;
         this.userStatus = userStatus;
         this.isActive = isActive;
         this.isEmailValid = isEmailValid;
+        this.deleteYn = deleteYn;
+        this.customer = customer;
+    }
+
+    public Users() {
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = Timestamp.from(Instant.now());
+        this.deleteYn = DeleteYn.N;
+        this.isActive = false;
+        this.isEmailValid = false;
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = Timestamp.from(Instant.now());
     }
 
     public UUID getUserId() {
@@ -225,13 +249,6 @@ public class Users {
         this.state = state;
     }
 
-    public Cart getUserCart() {
-        return userCart;
-    }
-
-    public void setUserCart(Cart userCart) {
-        this.userCart = userCart;
-    }
 
     public UserStatus getUserStatus() {
         return userStatus;
@@ -267,7 +284,6 @@ public class Users {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", profilePictureURL='" + profilePictureURL + '\'' +
-                ", userCart=" + userCart +
                 ", userStatus=" + userStatus +
                 '}';
     }
