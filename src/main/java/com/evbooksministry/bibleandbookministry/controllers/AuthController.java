@@ -78,4 +78,9 @@ public class AuthController {
     public ResponseEntity<?> validateEmail(@RequestBody EmailValidationRequest request){
         return new ResponseEntity<>(authService.validateUserEmail(request), HttpStatus.OK);
     }
+
+    @GetMapping("/")
+    public ResponseEntity<?> greeting(){
+        return new ResponseEntity<>("Welcome To Bible and Book Ministry server.", HttpStatus.OK);
+    }
 }
