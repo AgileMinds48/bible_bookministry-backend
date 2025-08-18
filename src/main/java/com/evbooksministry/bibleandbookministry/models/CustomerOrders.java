@@ -1,31 +1,29 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "customer_orders")
+@Table(name = "customer_order")
 public class CustomerOrders {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID orderId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Users user;
+    @ManyToOne
+    private Customer customerId;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Set<CartItems> cartItems;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Set<OrderItem> orderItems;
 
     private Timestamp createdAt;
@@ -42,14 +40,31 @@ public class CustomerOrders {
     @OneToOne
     private Payment orderPayment;
 
-    public Set<CartItems> getCartItems() {
-        return cartItems;
+    @Enumerated(EnumType.STRING)
+    private DeleteYn deleteYn;
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = Timestamp.from(Instant.now());
+        this.updatedAt = Timestamp.from(Instant.now());
+        this.deleteYn = DeleteYn.N;
     }
 
-    public void setCartItems(Set<CartItems> cartItems) {
-        this.cartItems = cartItems;
+    public Customer getCustomerId() {
+        return customerId;
     }
 
+    public void setCustomerId(Customer customerId) {
+        this.customerId = customerId;
+    }
+
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
+    }
+
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
+    }
 
     public UUID getOrderId() {
         return orderId;
@@ -59,13 +74,6 @@ public class CustomerOrders {
         this.orderId = orderId;
     }
 
-    public Users getUser() {
-        return user;
-    }
-
-    public void setUser(Users user) {
-        this.user = user;
-    }
 
     public Timestamp getCreatedAt() {
         return createdAt;
@@ -130,8 +138,7 @@ public class CustomerOrders {
     public String toString() {
         return "CustomerOrders{" +
                 "cartId=" + orderId +
-                ", user=" + user +
-                ", cartItems=" + cartItems +
+                ", customer=" + customerId +
                 ", orderItems=" + orderItems +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

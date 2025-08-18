@@ -1,158 +1,214 @@
 package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.dtos.AddOrRemoveFromCartRequest;
+import com.evbooksministry.bibleandbookministry.dtos.OrderItemDTO;
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
+import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
+import com.evbooksministry.bibleandbookministry.exceptions.CustomerNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.EmptyCart;
-import com.evbooksministry.bibleandbookministry.exceptions.InsufficientBooks;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFoundException;
-import com.evbooksministry.bibleandbookministry.models.Book;
-import com.evbooksministry.bibleandbookministry.models.Cart;
-import com.evbooksministry.bibleandbookministry.models.CartItems;
-import com.evbooksministry.bibleandbookministry.models.Users;
-import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
-import com.evbooksministry.bibleandbookministry.repositories.CartItemsRepository;
-import com.evbooksministry.bibleandbookministry.repositories.CartRepository;
-import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
+import com.evbooksministry.bibleandbookministry.mappers.OrderItemMapper;
+import com.evbooksministry.bibleandbookministry.models.*;
+import com.evbooksministry.bibleandbookministry.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
-    private final CartRepository cartRepository;
-    private final CartItemsRepository cartItemRepository;
+    private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderItemMapper orderItemMapper;
 
     public CartService(UserRepository userRepository,
                        BookRepository bookRepository,
-                       CartRepository cartRepository,
-                       CartItemsRepository cartItemRepository) {
+                       CustomerRepository customerRepository,
+                       OrderRepository orderRepository,
+                       OrderItemRepository orderItemRepository, OrderItemMapper orderItemMapper) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
+        this.customerRepository = customerRepository;
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.orderItemMapper = orderItemMapper;
     }
 
     @Transactional
-    public Set<CartItems> addItemToCart(AddOrRemoveFromCartRequest request, UUID userID) {
+    public Set<OrderItemDTO> addItemToCart(AddOrRemoveFromCartRequest request, UUID userID) {
+        Book book = bookRepository.findByBookId(request.bookId())
+                .orElseThrow(BookNotFound::new);
+
         Users user = userRepository.findById(userID)
-                .orElseThrow(() -> new UserNotFoundException("User Not Found"));
+                .orElseThrow(UserNotFoundException::new);
 
-        Cart cart = user.getUserCart();
-        if (cart == null) {
-            cart = new Cart();
-            cart.setUsers(user);
-            cart.setCartItems(new HashSet<>());
-            user.setUserCart(cart);
-        }
-        Book book = bookRepository.findById(request.bookId())
-                .orElseThrow(() -> new BookNotFound("Product Not Found"));
-        System.out.println(book);
+        Customer customer = customerRepository.getCustomerByUserId(user.getUserId())
+                .orElseThrow(CustomerNotFound::new);
 
-        //throwing an error if product is unavailable
-        if (!book.isAvailable()){
-            throw new BookNotFound("The product is not available for sale");
+        CustomerOrders existingOrder = null;
+        try {
+            existingOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
+        } catch (RuntimeException e) {
+
         }
 
-        if(book.getAmountInStock() < 1){
-            throw new InsufficientBooks();
+        if (existingOrder != null && existingOrder.getOrderStatus() == OrderStatus.IN_CART) {
+            Set<OrderItem> existingItems = existingOrder.getOrderItems();
+            if (existingItems == null) {
+                existingItems = new HashSet<>();
+                existingOrder.setOrderItems(existingItems);
+            }
+
+            Optional<OrderItem> existingItem = existingItems.stream()
+                    .filter(item -> item.getBook().getBookId().equals(request.bookId()))
+                    .findFirst();
+
+            if (existingItem.isPresent()) {
+                OrderItem item = existingItem.get();
+                item.setQuantity(item.getQuantity() + request.quantity());
+                orderItemRepository.save(item);
+            } else {
+                OrderItem newItem = createOrderItem(book, request.quantity());
+                orderItemRepository.save(newItem);
+                existingItems.add(newItem);
+            }
+
+            orderRepository.save(existingOrder);
+            return existingItems.stream()
+                    .map(orderItemMapper::toDTO)
+                    .collect(Collectors.toSet());
+        } else {
+            Set<OrderItem> customerOrderItems = new HashSet<>();
+            OrderItem item = createOrderItem(book, request.quantity());
+            customerOrderItems.add(item);
+
+            CustomerOrders order = new CustomerOrders();
+            order.setCustomerId(customer);
+            order.setOrderStatus(OrderStatus.IN_CART);
+            order.setOrderReference(UUID.randomUUID().toString());
+            order.setOrderItems(customerOrderItems);
+
+            item.setCustomerOrderId(order);
+            orderItemRepository.save(item);
+
+            order.setTotalPrice(item.getTotal());
+
+            orderRepository.save(order);
+
+            return customerOrderItems.stream()
+                    .map(orderItemMapper::toDTO)
+                    .collect(Collectors.toSet());
         }
-
-        if (request.quantity() > book.getAmountInStock()){
-            throw new InsufficientBooks();
-        }
-
-
-        Optional<CartItems> existingItems = cart.getCartItems()
-                .stream()
-                .filter(item -> item.getBook()
-                        .getBookId()
-                        .equals(request.bookId())).findFirst();
-
-        if (existingItems.isPresent()) {
-            BigDecimal ogPrice = book.getBookPrice();
-            CartItems item = existingItems.get();
-            item.setQuantity(item.getQuantity() + request.quantity());
-            item.setPrice(ogPrice.multiply(new BigDecimal(item.getQuantity())));
-        }else{
-            CartItems item = new CartItems();
-            item.setQuantity(request.quantity());
-            item.setBook(book);
-            item.setPrice(book.getBookPrice().multiply(new BigDecimal(request.quantity())));
-            item.setCart(cart);
-            cart.getCartItems().add(item);
-        }
-        cartRepository.save(cart);
-        userRepository.save(user);
-        book.setAmountInStock(book.getAmountInStock() - request.quantity());
-        book.setAmountSold(request.quantity());
-        bookRepository.saveAndFlush(book);
-        //TODO fix amount sold
-        System.out.println("Amount sold: " + book.getAmountSold());
-        System.out.println("Amount in stock: " + book.getAmountInStock());
-
-
-        return cart.getCartItems();
     }
 
-    public Set<CartItems> removeItemFromCart(AddOrRemoveFromCartRequest request, UUID userID) {
+    private OrderItem createOrderItem(Book book, Integer quantity) {
+        OrderItem item = new OrderItem();
+        item.setQuantity(quantity);
+        item.setUnitPrice(book.getBookPrice());
+        item.setBook(book);
+        return item;
+    }
+
+    @Transactional
+    public Set<OrderItem> removeItemFromCart(AddOrRemoveFromCartRequest request, UUID userID) {
         Users users = userRepository.findById(userID)
-                .orElseThrow(() -> new UserNotFoundException("User Not Found"));
-        Cart cart = users.getUserCart();
+                .orElseThrow(UserNotFoundException::new);
 
-        System.out.println("user cart: " + cart.getCartItems());
-        Optional<CartItems> items = cart.getCartItems()
-                .stream()
-                .filter(cartItem -> cartItem.getBook()
-                        .getBookId()
-                        .equals(request.bookId())).findFirst();
-        items.ifPresent(item -> cart.getCartItems()
-                .remove(item));
-        cartRepository.save(cart);
-        return cart.getCartItems();
+        Customer customer = customerRepository.getCustomerByUserId(users.getUserId())
+                .orElseThrow(CustomerNotFound::new);
+
+        CustomerOrders customerOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
+
+        if (customerOrder == null || customerOrder.getOrderItems() == null) {
+            throw new EmptyCart("Your cart is empty");
+        }
+
+        Set<OrderItem> orderItems = customerOrder.getOrderItems();
+        Optional<OrderItem> itemToRemove = orderItems.stream()
+                .filter(cartItem -> cartItem.getBook().getBookId().equals(request.bookId()))
+                .findFirst();
+
+        if (itemToRemove.isPresent()) {
+            OrderItem item = itemToRemove.get();
+            orderItems.remove(item);
+            orderItemRepository.delete(item); // Actually remove from database
+        }
+
+        orderRepository.save(customerOrder);
+        return orderItems;
+    }
+    @Transactional
+    public void clearCart(UUID userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User Not Found"));
+
+        Customer customer = customerRepository.getCustomerByUserId(user.getUserId())
+                .orElseThrow(CustomerNotFound::new);
+
+        CustomerOrders customerOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
+
+        if (customerOrder == null) {
+            throw new EmptyCart("No active cart found for user");
+        }
+
+        if (customerOrder.getOrderItems() != null) {
+            customerOrder.getOrderItems().forEach(item -> item.setDeleteYn(DeleteYn.Y));
+            orderItemRepository.saveAll(customerOrder.getOrderItems());
+        }
+
+        customerOrder.setDeleteYn(DeleteYn.Y);
+        orderRepository.save(customerOrder);
     }
 
-    public void clearCart(UUID userId) {
+    public Set<OrderItem> fetchCartItems(UUID userId) {
         Users users = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Not Found"));
-        Cart cart = users.getUserCart();
-        cart.getCartItems().clear();
-        System.out.println("user cart: " + cart.getCartItems());
-        cartRepository.save(cart);
-    }
 
-    public Set<CartItems> fetchCartItems(UUID userId) {
-        Set<CartItems> items = null;
+        Customer customer = customerRepository.getCustomerByUserId(users.getUserId())
+                .orElseThrow(CustomerNotFound::new);
+
         try {
-            Users users = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserNotFoundException("User Not Found"));
+            CustomerOrders customerOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
 
-            Cart cart = users.getUserCart();
-
-            if (cart == null) {
-                throw new RuntimeException("UserCart Not Found");
-            }
-
-            items = cart.getCartItems();
-//            System.out.println(items);
-
-            if (items.isEmpty()) {
+            if (customerOrder == null || customerOrder.getDeleteYn() == DeleteYn.Y) {
                 throw new EmptyCart("Your cart is empty");
             }
+
+            Set<OrderItem> cart = customerOrder.getOrderItems();
+
+            if (cart == null || cart.isEmpty()) {
+                throw new EmptyCart("Your cart is empty");
+            }
+
+            return new HashSet<>(cart);
         } catch (RuntimeException e) {
-            e.printStackTrace();
+            if (e instanceof EmptyCart) {
+                throw e;
+            }
+            throw new EmptyCart("Your cart is empty");
         }
-        if (items.isEmpty()) {
-            throw new EmptyCart();
-        }
-        return new HashSet<>(items);
     }
 
-    public Set<CartItems> fetchUserCartItems(UUID userId) {
-        return new HashSet<>(cartItemRepository.findCartItemsByUser(userId));
+    public Set<OrderItemDTO> fetchUserCart(UUID userId) {
+        Customer customer = customerRepository.getCustomerByUserId(userId)
+                .orElseThrow(CustomerNotFound::new);
+
+        Set<OrderItem> cartItems = new HashSet<>(orderItemRepository.getCustomerCart(customer.getCustomerId()));
+
+        if (cartItems.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        return cartItems.stream()
+                .map(orderItemMapper::toDTO)
+                .collect(Collectors.toSet());
     }
 }
-

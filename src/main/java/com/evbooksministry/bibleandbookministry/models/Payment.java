@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -23,15 +24,17 @@ public class Payment {
     @OneToOne(cascade = CascadeType.ALL)
     private CustomerOrders customerOrders;
 
-    private double amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private LocalDateTime paymentDate;
+    private Timestamp paymentDate;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+    private String paymentReference;
 
     public UUID getPaymentID() {
         return paymentID;
@@ -49,11 +52,11 @@ public class Payment {
         this.customerOrders = customerOrders;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
@@ -65,11 +68,11 @@ public class Payment {
         this.status = status;
     }
 
-    public LocalDateTime getPaymentDate() {
+    public Timestamp getPaymentDate() {
         return paymentDate;
     }
 
-    public void setPaymentDate(LocalDateTime paymentDate) {
+    public void setPaymentDate(Timestamp paymentDate) {
         this.paymentDate = paymentDate;
     }
 
@@ -79,5 +82,13 @@ public class Payment {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
 }

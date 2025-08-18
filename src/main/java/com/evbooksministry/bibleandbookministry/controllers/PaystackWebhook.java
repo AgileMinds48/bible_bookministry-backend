@@ -1,3 +1,4 @@
+/*
 package com.evbooksministry.bibleandbookministry.controllers;
 
 import com.evbooksministry.bibleandbookministry.config.EmailService;
@@ -7,7 +8,6 @@ import com.evbooksministry.bibleandbookministry.exceptions.OrderNotFound;
 import com.evbooksministry.bibleandbookministry.models.Cart;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import com.evbooksministry.bibleandbookministry.models.Users;
-import com.evbooksministry.bibleandbookministry.repositories.CartRepository;
 import com.evbooksministry.bibleandbookministry.repositories.OrderRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,16 +34,13 @@ public class PaystackWebhook {
     static Dotenv dotenv = Dotenv.configure().load();
     private final OrderRepository orderRepository;
     private static final String API_SECRET_KEY = dotenv.get("PAYSTACK_SECRET");
-    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
 
     public PaystackWebhook(OrderRepository orderRepository,
-                           CartRepository cartRepository,
                            UserRepository userRepository,
                            EmailService emailService) {
         this.orderRepository = orderRepository;
-        this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
     }
@@ -129,3 +126,4 @@ public class PaystackWebhook {
         }
     }
 }
+*/
