@@ -1,11 +1,16 @@
 package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.config.EmailService;
-import com.evbooksministry.bibleandbookministry.dtos.*;
+import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
+import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
+import com.evbooksministry.bibleandbookministry.dtos.CustomerOrderDTO;
+import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
+import com.evbooksministry.bibleandbookministry.exceptions.CustomerNotFound;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.mappers.CustomerOrderMapper;
 import com.evbooksministry.bibleandbookministry.mappers.UserMapper;
+import com.evbooksministry.bibleandbookministry.models.Customer;
 import com.evbooksministry.bibleandbookministry.models.Employee;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.*;
@@ -31,6 +36,7 @@ public class AdminService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final CustomerOrderMapper customerOrderMapper;
+    private final CustomerRepository customerRepository;
 
     public AdminService(UserRepository userRepository,
                         EmailService emailService,
@@ -42,7 +48,7 @@ public class AdminService {
                         EmployeeRepository employeeRepository,
                         OrderRepository orderRepository,
                         PaymentRepository paymentRepository,
-                        CustomerOrderMapper customerOrderMapper) {
+                        CustomerOrderMapper customerOrderMapper, CustomerRepository customerRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.bookRepository = bookRepository;
@@ -54,6 +60,7 @@ public class AdminService {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.customerOrderMapper = customerOrderMapper;
+        this.customerRepository = customerRepository;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -117,7 +124,10 @@ public class AdminService {
     }
 
     public List<CustomerOrderDTO> viewCustomerOrderHistory(UUID customerId){
-        return orderRepository.findCustomerOrders(customerId)
+        Customer customer = customerRepository.getCustomerByUserId(customerId)
+                .orElseThrow(CustomerNotFound::new);
+
+        return orderRepository.findCustomerOrders(customer.getCustomerId())
                 .stream()
                 .map(customerOrderMapper::toDTO)
                 .toList();
@@ -130,5 +140,13 @@ public class AdminService {
                 .toList();
     }
 
+    //list of orders api for user, product, timestamp most recent on top
+
+    public List<CustomerOrderDTO> getMostRecentOrders(){
+        return orderRepository.getMostRecentOrders()
+                .stream()
+                .map(customerOrderMapper::toDTO)
+                .toList();
+    }
 
 }

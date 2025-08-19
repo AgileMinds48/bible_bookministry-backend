@@ -29,4 +29,9 @@ public interface OrderRepository extends JpaRepository<CustomerOrders, UUID> {
     @Query("select  c from CustomerOrders c where c.customerId.customerId = :customerId")
     List<CustomerOrders> findCustomerOrders(UUID customerId);
 
+    @Query("select c from CustomerOrders c where c.orderReference = :reference")
+    List<CustomerOrders> findByOrderReference(UUID reference);
+
+    @Query("select c from CustomerOrders c order by c.createdAt")
+    List<CustomerOrders> getMostRecentOrders();
 }

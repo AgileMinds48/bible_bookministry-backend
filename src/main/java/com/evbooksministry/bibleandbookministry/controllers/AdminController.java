@@ -154,4 +154,35 @@ public class AdminController {
         return new ResponseEntity<>("Product removed successfully", HttpStatus.OK);
     }
 
+
+    @GetMapping("/books/get-available")
+    public ResponseEntity<?> getTotalAvailableBooks(){
+        return new ResponseEntity<>(adminService.getTotalAvailableBooks(), HttpStatus.OK);
+    }
+
+    @GetMapping("/orders/get-total")
+    public ResponseEntity<?> getTotalAvailableOrders(){
+        return new ResponseEntity<>(adminService.getTotalOrders(), HttpStatus.OK);
+    }
+
+    @GetMapping("/orders/total-sales")
+    public ResponseEntity<?> getTotalSales(){
+        return new ResponseEntity<>(adminService.getTotalSales(), HttpStatus.OK);
+    }
+
+    @GetMapping("/books/low-stock")
+    public ResponseEntity<?> getBooksLowInStock(){
+        return new ResponseEntity<>(adminService.getBooksLowInStock(), HttpStatus.OK);
+    }
+
+    @GetMapping("/orders/customer/{customerId}")
+    public ResponseEntity<?> viewCustomerOrderHistory(@PathVariable UUID customerId){
+        return new ResponseEntity<>(adminService.viewCustomerOrderHistory(customerId), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/books/highest-selling")
+    public ResponseEntity<?> getHighestSellingBooks(){
+        return new ResponseEntity<>(adminService.getHighestSellingBooks(), HttpStatus.OK);
+    }
 }

@@ -1,13 +1,11 @@
 package com.evbooksministry.bibleandbookministry.dtos;
 
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
 public record UpdateBook(
         UUID bookId,
-        BookCategory bookCategory,
+        String categoryName,
         String bookAuthor,
         String bookDescription,
         String bookTitle,
@@ -19,7 +17,7 @@ public record UpdateBook(
     public UpdateBook bookDetails(UUID bookId){
         return new UpdateBook(
                 bookId,
-                this.bookCategory,
+                this.categoryName,
                 this.bookAuthor,
                 this.bookDescription,
                 this.bookTitle,
