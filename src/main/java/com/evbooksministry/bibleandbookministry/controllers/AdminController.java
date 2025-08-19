@@ -1,11 +1,10 @@
 package com.evbooksministry.bibleandbookministry.controllers;
 
 import com.evbooksministry.bibleandbookministry.config.JWTService;
-import com.evbooksministry.bibleandbookministry.dtos.AddBookRequest;
-import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
-import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
-import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
+import com.evbooksministry.bibleandbookministry.dtos.*;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
+import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
+import com.evbooksministry.bibleandbookministry.exceptions.InvalidDetails;
 import com.evbooksministry.bibleandbookministry.exceptions.UnauthorizedAction;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
@@ -24,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,4 +103,55 @@ public class AdminController {
         System.out.println("user ID: " + userId);
         return adminService.getUserById(userId);
     }
+
+    @PatchMapping("/update-details")
+    public ResponseEntity<?> updateBookDetails(@RequestBody UpdateBookDetails request) throws InvalidDetails {
+        try{
+            return new ResponseEntity<>(bookService.updateBookDetails(request), HttpStatus.OK);
+        }catch (InvalidDetails e){
+            throw new InvalidDetails();
+        }
+    }
+
+    @PatchMapping("/update-media")
+    public ResponseEntity<?> updateProductMedia(
+            @RequestPart("productId")String productId,
+            @RequestPart("media")MultipartFile[] media
+    ){
+        try{
+            UUID product = UUID.fromString(productId);
+            UpdateBookMedia updateProductMedia = new UpdateBookMedia(
+                    product,
+                    media
+            );
+            return new ResponseEntity<>(bookService.updateProductMedia(updateProductMedia), HttpStatus.OK);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProduct(
+            @RequestPart("product")String updateDetails,
+            @RequestPart("media")MultipartFile[] files
+    )  {
+        try{
+            UpdateBook update = new ObjectMapper().readValue(updateDetails, UpdateBook.class);
+            return new ResponseEntity<>(bookService.updateProduct(update, files), HttpStatus.OK);
+        }catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/remove-book/{productId}")
+    public ResponseEntity<?> removeProduct(@PathVariable UUID productId) {
+        try {
+            bookService.deleteProduct(productId);
+        } catch (BookNotFound e) {
+            throw new BookNotFound();
+        }
+        return new ResponseEntity<>("Product removed successfully", HttpStatus.OK);
+    }
+
 }
