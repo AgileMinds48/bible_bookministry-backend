@@ -109,11 +109,6 @@ public class AuthService implements IAuthService {
                 .state(registrationDTO.state())
                 .createdAt(Timestamp.from(Instant.now()))
                 .updatedAt(Timestamp.from(Instant.now()))
-                .profilePictureURL(
-                        registrationDTO.profilePictureURL() == null ?
-                                "no picture" :
-                                registrationDTO.profilePictureURL()
-                )
                 .isActive(true)
                 .isEmailValid(false)
                 .build();

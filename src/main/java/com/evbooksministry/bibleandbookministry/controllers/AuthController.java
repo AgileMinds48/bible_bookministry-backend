@@ -11,13 +11,11 @@ import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.services.AuthService;
 import com.evbooksministry.bibleandbookministry.services.CloudinaryService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -45,32 +43,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> userSignup(
-            @RequestPart("userInfo") String apiRequest,
-            @RequestPart("userImage")MultipartFile userImage
-            ) throws JsonProcessingException {
-        try {
-            UserDTO registrationRequest = objectMapper.readValue(
-                    apiRequest,
-                    UserDTO.class
-            );
-            String userImageURL =
-                    cloudinaryService.uploadFile(userImage);
-            registrationRequest.newProfilePictureURL(userImageURL);
-            System.out.println("profile pic url: " + userImageURL);
-            return new ResponseEntity<>(
-                    authService.userRegistration(registrationRequest),
-                    HttpStatus.OK
-            );
-        } catch (UserAlreadyExists e) {
-            throw new UserNotFound();
-        } catch (InvalidEmail e){
-            throw new InvalidEmail();
-        }
-    }
-
-    @PostMapping("/signup/v2")
-    public ResponseEntity<?> userSignup(@RequestBody UserDTO apiRequest){
+    public ResponseEntity<?> userSignup(@RequestBody UserDTO apiRequest) {
         try {
             return new ResponseEntity<>(
                     authService.userRegistration(apiRequest),

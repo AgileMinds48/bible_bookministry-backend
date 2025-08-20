@@ -62,10 +62,6 @@ public class Users {
     private Timestamp updatedAt;
 
 
-    private String profilePictureURL;
-
-
-
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
@@ -97,7 +93,6 @@ public class Users {
         this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.profilePictureURL = profilePictureURL;
         this.userStatus = userStatus;
         this.isActive = isActive;
         this.isEmailValid = isEmailValid;
@@ -217,14 +212,6 @@ public class Users {
         this.updatedAt = updatedAt;
     }
 
-    public String getProfilePictureURL() {
-        return profilePictureURL;
-    }
-
-    public void setProfilePictureURL(String profilePictureURL) {
-        this.profilePictureURL = profilePictureURL;
-    }
-
     public String getCity() {
         return city;
     }
@@ -283,7 +270,6 @@ public class Users {
                 ", state='" + state + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", profilePictureURL='" + profilePictureURL + '\'' +
                 ", userStatus=" + userStatus +
                 '}';
     }
