@@ -67,10 +67,6 @@ public class AdminController {
         return adminService.getAllUsers();
     }
 
-    @GetMapping("get-books")
-    public Page<BookDTO> getBooks(Pageable pageable) {
-        return adminService.getAllBooks(pageable);
-    }
 
     @PostMapping("add-book")
     public ResponseEntity<?> addProduct(
