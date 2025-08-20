@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<UUID, Category> {
+public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("select c from Category c where c.categoryName = :categoryName")
     Optional<Category> findByCategoryName(String categoryName);

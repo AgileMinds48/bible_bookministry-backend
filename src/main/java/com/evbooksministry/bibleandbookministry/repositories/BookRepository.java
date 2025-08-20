@@ -1,6 +1,5 @@
 package com.evbooksministry.bibleandbookministry.repositories;
 
-import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
 import com.evbooksministry.bibleandbookministry.models.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,7 @@ import java.util.UUID;
 public interface BookRepository extends JpaRepository<Book, UUID> {
 
     @Query("select b from Book b where b.isAvailable = TRUE")
-    Page<BookDTO> getAllByAvailable(Pageable pageable);
+    Page<Book> getAllByAvailable(Pageable pageable);
 
     @Query("select b from Book b where b.bookId = :bookId")
     Optional<Book> findByBookId(UUID bookId);
@@ -24,7 +23,7 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
     @Query("select b from Book b where b.bookCategory.categoryName = :categoryName")
     Page<Book> findByBookCategory(String categoryName, Pageable pageable);
 
-    @Query("select count(b) from Book b where b.isAvailable = true and b.deleteYn = 'NO'")
+    @Query("select count(b) from Book b where b.isAvailable = true and b.deleteYn = 'N'")
     Integer countTotalAvailableBooks();
 
     @Query("select b from Book b where b.amountInStock < 0")

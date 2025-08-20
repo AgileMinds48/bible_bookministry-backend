@@ -124,7 +124,7 @@ public class AdminService {
     }
 
     public List<CustomerOrderDTO> viewCustomerOrderHistory(UUID customerId){
-        Customer customer = customerRepository.getCustomerByUserId(customerId)
+        Customer customer = customerRepository.getCustomerByCustomerId(customerId)
                 .orElseThrow(CustomerNotFound::new);
 
         return orderRepository.findCustomerOrders(customer.getCustomerId())

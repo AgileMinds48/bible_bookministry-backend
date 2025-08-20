@@ -1,7 +1,7 @@
 package com.evbooksministry.bibleandbookministry.dtos;
 
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
+import com.evbooksministry.bibleandbookministry.models.Category;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,14 +46,14 @@ public class OrderItemDTO {
         private String author;
         private String isbn;
         private List<String> imageUrl;
-        private BookCategory category;
+        private Category category;
         private BigDecimal originalPrice;
         private BigDecimal currentPrice;
         private Integer stockQuantity;
 
         public BookDetailsDTO() {}
 
-        public BookDetailsDTO(UUID bookId, String title, String author, List<String> imageUrl, BookCategory category, BigDecimal originalPrice, BigDecimal currentPrice, Integer stockQuantity) {
+        public BookDetailsDTO(UUID bookId, String title, String author, List<String> imageUrl, Category category, BigDecimal originalPrice, BigDecimal currentPrice, Integer stockQuantity) {
             this.bookId = bookId;
             this.title = title;
             this.author = author;
@@ -77,8 +77,8 @@ public class OrderItemDTO {
         public List<String> getImageUrl() { return imageUrl; }
         public void setImageUrl(List<String> imageUrl) { this.imageUrl = imageUrl; }
 
-        public BookCategory getCategory() { return category; }
-        public void setCategory(BookCategory category) { this.category = category; }
+        public Category getCategory() { return category; }
+        public void setCategory(Category category) { this.category = category; }
 
         public BigDecimal getOriginalPrice() { return originalPrice; }
         public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }

@@ -59,7 +59,8 @@ public class BookService implements IBookService {
 
     @Override
     public Page<BookDTO> getAllBooks(Pageable pageable) {
-        return bookRepository.getAllByAvailable(pageable);
+        return bookRepository.getAllByAvailable(pageable)
+                .map(bookMapper::bookEntityToBookDTO);
     }
 
     @Override
@@ -121,7 +122,7 @@ public class BookService implements IBookService {
         Employee employee = employeeRepository.findEmployeeByUserId(admin.getUserId())
                 .orElseThrow(EmployeeNotFound::new);
 
-        Category bookCategory = categoryRepository.findByCategoryName(request.categoryName())
+        Category bookCategory = categoryRepository.findByCategoryName(request.categoryName().toLowerCase())
                 .orElseThrow(CategoryDoesNotExist::new);
 
 

@@ -13,6 +13,7 @@ import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.services.AdminService;
 import com.evbooksministry.bibleandbookministry.services.BookService;
+import com.evbooksministry.bibleandbookministry.services.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +39,13 @@ public class AdminController {
     private final JWTService jwtService;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final CategoryService categoryService;
 
 
     @Autowired
     public AdminController(AdminService adminService,
                            BookRepository bookRepository,
-                           BookMapper bookMapper, BookService bookService, HttpServletRequest request, JWTService jwtService, UserRepository userRepository, ObjectMapper objectMapper) {
+                           BookMapper bookMapper, BookService bookService, HttpServletRequest request, JWTService jwtService, UserRepository userRepository, ObjectMapper objectMapper, CategoryService categoryService) {
         this.adminService = adminService;
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
@@ -52,6 +54,7 @@ public class AdminController {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
+        this.categoryService = categoryService;
     }
 
     @PostMapping("register")
@@ -184,5 +187,15 @@ public class AdminController {
     @GetMapping("/books/highest-selling")
     public ResponseEntity<?> getHighestSellingBooks(){
         return new ResponseEntity<>(adminService.getHighestSellingBooks(), HttpStatus.OK);
+    }
+
+    @PostMapping("/category/create-defaults")
+    public ResponseEntity<?> createDefaultCategories(@RequestBody List<CategoryDTO> dtoList){
+        return new ResponseEntity<>(categoryService.createDefaultCategories(dtoList), HttpStatus.OK);
+    }
+
+    @PostMapping("/category/new")
+    public ResponseEntity<?> createNewCategory(@RequestBody CategoryDTO newCategory){
+        return new ResponseEntity<>(categoryService.createNewBookCategory(newCategory), HttpStatus.CREATED);
     }
 }

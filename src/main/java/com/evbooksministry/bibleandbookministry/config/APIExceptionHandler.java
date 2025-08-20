@@ -320,4 +320,23 @@ public class APIExceptionHandler {
         return new ResponseEntity<>(apiException, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(UserNotFound.class)
+    public ResponseEntity<?> handleUserNotFound(UserNotFound ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "Invalid",
+                HttpStatus.NOT_FOUND.value(),
+                new APIException.ApiError(
+                        HttpStatus.NOT_FOUND,
+                        "User not found",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+
 }
