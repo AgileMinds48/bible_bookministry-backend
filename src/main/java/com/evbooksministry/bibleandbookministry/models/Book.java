@@ -1,7 +1,6 @@
 package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.converter.StringListConverter;
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -41,6 +40,10 @@ public class Book {
     @JoinColumn(name = "employeeId")
     private Employee addedBy;
 
+    @OneToOne
+    @JoinColumn(name = "categoryId")
+    private Category bookCategory;
+
     @Size(max = 100)
     @Column(nullable = false)
     private String bookAuthor;
@@ -73,9 +76,6 @@ public class Book {
     private List<String> media = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private BookCategory bookCategory;
-
-    @Enumerated(EnumType.STRING)
     private DeleteYn deleteYn;
 
     @PrePersist
@@ -97,6 +97,7 @@ public class Book {
     public Book(UUID bookId,
                 String bookTitle,
                 Employee addedBy,
+                Category bookCategory,
                 String bookAuthor,
                 String bookDescription,
                 BigDecimal bookPrice,
@@ -108,11 +109,11 @@ public class Book {
                 Timestamp createdOn,
                 Timestamp updatedOn,
                 List<String> media,
-                BookCategory bookCategory,
                 DeleteYn deleteYn) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.addedBy = addedBy;
+        this.bookCategory = bookCategory;
         this.bookAuthor = bookAuthor;
         this.bookDescription = bookDescription;
         this.bookPrice = bookPrice;
@@ -124,7 +125,6 @@ public class Book {
         this.createdOn = createdOn;
         this.updatedOn = updatedOn;
         this.media = media;
-        this.bookCategory = bookCategory;
         this.deleteYn = deleteYn;
     }
 
@@ -243,13 +243,6 @@ public class Book {
         this.media = media;
     }
 
-    public BookCategory getBookCategory() {
-        return bookCategory;
-    }
-
-    public void setBookCategory(BookCategory bookCategory) {
-        this.bookCategory = bookCategory;
-    }
 
     public String getBookAuthor() {
         return bookAuthor;
@@ -257,5 +250,13 @@ public class Book {
 
     public void setBookAuthor(String bookAuthor) {
         this.bookAuthor = bookAuthor;
+    }
+
+    public Category getBookCategory() {
+        return bookCategory;
+    }
+
+    public void setBookCategory(Category bookCategory) {
+        this.bookCategory = bookCategory;
     }
 }

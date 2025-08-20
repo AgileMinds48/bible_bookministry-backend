@@ -1,7 +1,6 @@
 package com.evbooksministry.bibleandbookministry.serviceInterfaces;
 
 import com.evbooksministry.bibleandbookministry.dtos.BuyNow;
-import com.evbooksministry.bibleandbookministry.dtos.OrderDTO;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentResponse;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
@@ -25,7 +24,7 @@ public interface IOrderService {
 
     Set<OrderItem> getBuyerOrder(UUID userId);
 
-    OrderDTO createOrder(UUID customerId);
+//    CustomerOrderDTO createOrder(UUID customerId);
 
     void cancelOrder(UUID orderId);
 }

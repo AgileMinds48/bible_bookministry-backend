@@ -243,4 +243,62 @@ public class APIExceptionHandler {
         Sentry.captureException(ex);
         return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(CategoryDoesNotExist.class)
+    public ResponseEntity<?> handleCategoryDoesNotExist(CategoryDoesNotExist ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "Invalid",
+                HttpStatus.BAD_REQUEST.value(),
+                new APIException.ApiError(
+                        HttpStatus.BAD_REQUEST,
+                        "Category does not exist",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CategoryAlreadyExists.class)
+    public ResponseEntity<?> handleCategoryAlreadyExists(CategoryAlreadyExists ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "Invalid",
+                HttpStatus.CONFLICT.value(),
+                new APIException.ApiError(
+                        HttpStatus.CONFLICT,
+                        "The category the user attempted to create already exists",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserNotFound.class)
+    public ResponseEntity<?> handleUserNotFound(UserNotFound ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "Invalid",
+                HttpStatus.NOT_FOUND.value(),
+                new APIException.ApiError(
+                        HttpStatus.NOT_FOUND,
+                        "User not found",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+
 }

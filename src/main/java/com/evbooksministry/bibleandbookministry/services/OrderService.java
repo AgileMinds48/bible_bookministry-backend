@@ -2,7 +2,6 @@ package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.config.EmailService;
 import com.evbooksministry.bibleandbookministry.dtos.BuyNow;
-import com.evbooksministry.bibleandbookministry.dtos.OrderDTO;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentResponse;
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
@@ -347,19 +346,19 @@ public class OrderService implements IOrderService {
         return orderItemRepository.findByCustomerId(userId);
     }
 
-    @Override
+/*    @Override
     @Transactional
-    public OrderDTO createOrder(UUID customerId) {
+    public CustomerOrderDTO createOrder(UUID customerId) {
         // Implementation for creating order DTO
         Users user = userRepository.findById(customerId)
                 .orElseThrow(UserNotFoundException::new);
 
         // Create order DTO logic here
-        OrderDTO orderDTO = new OrderDTO();
+        CustomerOrderDTO customerOrderDTO = new CustomerOrderDTO();
         // Set DTO properties
 
-        return orderDTO;
-    }
+        return customerOrderDTO;
+    }*/
 
     @Override
     @Transactional

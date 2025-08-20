@@ -1,10 +1,9 @@
 package com.evbooksministry.bibleandbookministry.dtos;
 
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
+import com.evbooksministry.bibleandbookministry.models.Category;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.UUID;
 
 public record BookDTO(
@@ -18,8 +17,7 @@ public record BookDTO(
         Timestamp createdOn,
         Timestamp updatedOn,
         Integer amountSold,
-        BookCategory bookCategory,
-        Integer amountInStock,
-        List<String> media
+        Category bookCategory,
+        Integer amountInStock
 ) {
 }
