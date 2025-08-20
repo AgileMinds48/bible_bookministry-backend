@@ -77,7 +77,7 @@ public class Users {
     private Customer customer;
 
 
-    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
+    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
         this.userId = userId;
         this.roleId = roleId;
         this.firstName = firstName;
