@@ -69,6 +69,20 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/signup/v2")
+    public ResponseEntity<?> userSignup(@RequestBody UserDTO apiRequest){
+        try {
+            return new ResponseEntity<>(
+                    authService.userRegistration(apiRequest),
+                    HttpStatus.OK
+            );
+        } catch (UserAlreadyExists e) {
+            throw new UserNotFound();
+        } catch (InvalidEmail e){
+            throw new InvalidEmail();
+        }
+    }
+
     @PostMapping("/request-validation")
     public ResponseEntity<?> requestEmailValidation(@RequestBody RequestEmailValidation requestEmailValidation){
         return new ResponseEntity<>(authService.sendValidationEmail(requestEmailValidation), HttpStatus.OK);
