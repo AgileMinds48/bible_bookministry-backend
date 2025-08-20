@@ -1,6 +1,6 @@
 package com.evbooksministry.bibleandbookministry.config;
 
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
+
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -31,24 +31,24 @@ public class JWTService {
     }
 
 
-    public String generateRefreshToken(String username, UserRole role, UUID userID) {
+    public String generateRefreshToken(String username, String role, UUID userID) {
         long refreshTokenExp = 15552000000L;
         return generateToken(username, refreshTokenExp, role, userID);
     }
 
-    public String generateAccessToken(String username, UserRole role, UUID userId) {
+    public String generateAccessToken(String username, String role, UUID userId) {
         long accessTokenExpirationTime = 15552000000L;
         return generateToken(username, accessTokenExpirationTime, role, userId);
     }
 
-    public String generateToken(String username, long expirationTime, UserRole role, UUID userId) {
+    public String generateToken(String username, long expirationTime, String role, UUID userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
 
         Map<String, Object> claims = new HashMap<>();
-        if (user.getUserRole().equals(UserRole.ADMIN)) {
+        if ("ADMIN".equals(role)) {
             claims.put("adminId", user.getUserId().toString());
-        } else if (user.getUserRole().equals(UserRole.CUSTOMER)) {
+        } else if ("CUSTOMER".equals(role)) {
             claims.put("customerId", user.getUserId().toString());
         }
         claims.put("role", role);

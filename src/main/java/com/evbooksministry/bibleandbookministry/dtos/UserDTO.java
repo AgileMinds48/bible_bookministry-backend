@@ -1,7 +1,6 @@
 package com.evbooksministry.bibleandbookministry.dtos;
 
 import com.evbooksministry.bibleandbookministry.enums.Gender;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -15,7 +14,7 @@ public record UserDTO (
         String password,
         String email,
         String phoneNumber,
-        UserRole userRole,
+
         String city,
         String country,
         String state,
@@ -33,7 +32,7 @@ public record UserDTO (
                 this.password,
                 this.email,
                 this.phoneNumber,
-                this.userRole,
+
                 this.city,
                 this.country,
                 this.state,

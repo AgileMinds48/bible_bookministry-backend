@@ -1,7 +1,6 @@
 package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.enums.Gender;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -11,6 +10,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -48,8 +49,14 @@ public class Users {
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole userRole;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
 
     private String city;
     private String country;
@@ -73,7 +80,7 @@ public class Users {
 
     private boolean isActive;
 
-    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
+    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Set<Role> roles, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -82,7 +89,7 @@ public class Users {
         this.password = password;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.userRole = userRole;
+        this.roles = roles;
         this.city = city;
         this.country = country;
         this.state = state;
@@ -158,12 +165,32 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public UserRole getUserRole() {
-        return userRole;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+    
+    // Helper methods for role management
+    public void addRole(Role role) {
+        this.roles.add(role);
+        role.getUsers().add(this);
+    }
+    
+    public void removeRole(Role role) {
+        this.roles.remove(role);
+        role.getUsers().remove(this);
+    }
+    
+    public boolean hasRole(String roleCode) {
+        return this.roles.stream()
+                .anyMatch(role -> role.getRoleCode().equals(roleCode));
+    }
+    
+    public boolean hasRole(Role role) {
+        return this.roles.contains(role);
     }
 
     public Timestamp getCreatedAt() {
@@ -249,7 +276,7 @@ public class Users {
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", userRole=" + userRole +
+                ", roles=" + roles +
                 ", city='" + city + '\'' +
                 ", country='" + country + '\'' +
                 ", state='" + state + '\'' +
