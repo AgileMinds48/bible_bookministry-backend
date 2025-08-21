@@ -33,9 +33,7 @@ public class UserPrincipal implements UserDetails {
     }
 
     private Collection<? extends GrantedAuthority> createAuthorities(Users user) {
-        return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleCode()))
-                .toList();
+        return List.of(new SimpleGrantedAuthority(user.getRoles().getRoleName()));
     }
 
     @Override

@@ -10,8 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -49,14 +47,9 @@ public class Users {
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    @Builder.Default
-    private Set<Role> roles = new HashSet<>();
+    @OneToOne
+
+    private Role roles;
 
     private String city;
     private String country;
@@ -80,7 +73,7 @@ public class Users {
 
     private boolean isActive;
 
-    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Set<Role> roles, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
+    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Role roles, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -165,15 +158,15 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public Set<Role> getRoles() {
+    public Role getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Role roles) {
         this.roles = roles;
     }
     
-    // Helper methods for role management
+/*    // Helper methods for role management
     public void addRole(Role role) {
         this.roles.add(role);
         role.getUsers().add(this);
@@ -191,7 +184,7 @@ public class Users {
     
     public boolean hasRole(Role role) {
         return this.roles.contains(role);
-    }
+    }*/
 
     public Timestamp getCreatedAt() {
         return createdAt;

@@ -9,8 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -43,11 +41,11 @@ public class Role {
     @UpdateTimestamp
     private Timestamp updatedAt;
     
-    @ManyToMany(mappedBy = "roles")
+/*    @ManyToMany(mappedBy = "roles")
     @Builder.Default
-    private Set<Users> users = new HashSet<>();
+    private Set<Users> users = new HashSet<>();*/
     
-    // Helper methods
+/*    // Helper methods
     public void addUser(Users user) {
         this.users.add(user);
         user.getRoles().add(this);
@@ -56,5 +54,5 @@ public class Role {
     public void removeUser(Users user) {
         this.users.remove(user);
         user.getRoles().remove(this);
-    }
+    }*/
 }
