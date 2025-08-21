@@ -21,7 +21,7 @@ public class Role {
     private String roleName;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     @JsonBackReference
     private Users createdBy;
 
