@@ -20,6 +20,12 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private DeleteYn deleteYn;
 
+
+    @PrePersist
+    protected void onCreate(){
+        this.deleteYn = DeleteYn.N;
+
+    }
     public Employee() {
     }
 
