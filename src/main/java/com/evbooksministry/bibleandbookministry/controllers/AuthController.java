@@ -15,7 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -64,10 +67,5 @@ public class AuthController {
     @PostMapping("/validate-email")
     public ResponseEntity<?> validateEmail(@RequestBody EmailValidationRequest request){
         return new ResponseEntity<>(authService.validateUserEmail(request), HttpStatus.OK);
-    }
-
-    @GetMapping("/")
-    public ResponseEntity<?> greeting(){
-        return new ResponseEntity<>("Welcome To Bible and Book Ministry server.", HttpStatus.OK);
     }
 }

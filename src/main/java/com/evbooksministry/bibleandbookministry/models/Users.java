@@ -61,7 +61,6 @@ public class Users {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 

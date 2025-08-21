@@ -57,7 +57,7 @@ public class AuthService implements IAuthService {
     public LoginResponse userLogin(LoginRequest loginRequest, HttpServletResponse response) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken
-                    (loginRequest.usernameOrEmail(), loginRequest.password()));
+                    (loginRequest.usernameOrEmail().toLowerCase(), loginRequest.password()));
 
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
@@ -96,9 +96,9 @@ public class AuthService implements IAuthService {
         }
 
         Users newUser = Users.builder()
-                .firstName(registrationDTO.firstName())
-                .lastName(registrationDTO.lastName())
-                .userName(registrationDTO.userName())
+                .firstName(registrationDTO.firstName().toLowerCase())
+                .lastName(registrationDTO.lastName().toLowerCase())
+                .userName(registrationDTO.userName().toLowerCase())
                 .userGender(registrationDTO.userGender())
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
