@@ -70,7 +70,7 @@ public class AuthService implements IAuthService {
             ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
                     .httpOnly(true)
                     .secure(true)
-                    .sameSite("Strict")
+                    .sameSite("Lax")
                     .path("/")
                     .maxAge(3600)
                     .build();
