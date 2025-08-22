@@ -80,7 +80,7 @@ public class AuthService implements IAuthService {
 
             return new LoginResponse(
                  true,
-                    users.getRoleId().getRoleName(),
+                    users.getRoleId().getRoleName().toUpperCase(),
                     users.getUserName(),
                     users.getEmail()
 
