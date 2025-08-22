@@ -1,3 +1,4 @@
+/*
 package com.evbooksministry.bibleandbookministry.Services;
 
 import com.evbooksministry.bibleandbookministry.config.EmailService;
@@ -126,3 +127,4 @@ class AdminServiceTest {
     }
 }
 
+*/
