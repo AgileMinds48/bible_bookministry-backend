@@ -1,6 +1,5 @@
 package com.evbooksministry.bibleandbookministry.repositories;
 
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,7 +21,8 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
     @Query("select u from Users u where u.isActive = TRUE")
     List<Users> findByIsActive();
 
-    Set<Users> findByUserRole(UserRole userRole);
+    @Query("select u from Users u where u.roleId.roleName = :userRole")
+    Set<Users> findByUserRole(String userRole);
 
     Optional<Users> findByUserId(UUID userId);
 }

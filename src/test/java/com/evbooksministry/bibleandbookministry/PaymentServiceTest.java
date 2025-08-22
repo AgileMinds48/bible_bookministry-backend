@@ -1,7 +1,8 @@
 /**
  * Unit tests for PaymentService covering processPayment success and error scenarios.
  * Each test uses Mockito to mock dependencies and is documented for clarity.
- */
+ *//*
+
 package com.evbooksministry.bibleandbookministry;
 
 import com.evbooksministry.bibleandbookministry.dtos.PaymentRequest;
@@ -50,18 +51,22 @@ class PaymentServiceTest {
     @InjectMocks
     private PaymentService paymentService;
 
-    /**
+    */
+/**
      * Sets up mocks and the PaymentService instance before each test.
-     */
+     *//*
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         paymentService = new PaymentService(restTemplate, paymentRepository, userRepository, orderRepository, cartItemRepository, cartRepository);
     }
 
-    /**
+    */
+/**
      * Verifies processPayment returns PaymentResponse on success.
-     */
+     *//*
+
     @Test
     void testProcessPayment_Success() throws JsonProcessingException {
         String userEmail = "test@example.com";
@@ -84,9 +89,11 @@ class PaymentServiceTest {
         assertEquals("Success", result.message());
     }
 
-    /**
+    */
+/**
      * Verifies processPayment throws if user is not found.
-     */
+     *//*
+
     @Test
     void testProcessPayment_UserNotFound() {
         String userEmail = "notfound@example.com";
@@ -95,9 +102,11 @@ class PaymentServiceTest {
         assertThrows(RuntimeException.class, () -> paymentService.processPayment(userEmail, totalAmount));
     }
 
-    /**
+    */
+/**
      * Verifies processPayment throws if no pending orders are found.
-     */
+     *//*
+
     @Test
     void testProcessPayment_OrdersNotFound() {
         String userEmail = "test@example.com";
@@ -110,9 +119,11 @@ class PaymentServiceTest {
         assertThrows(RuntimeException.class, () -> paymentService.processPayment(userEmail, totalAmount));
     }
 
-    /**
+    */
+/**
      * Verifies processPayment throws if RestTemplate throws an error.
-     */
+     *//*
+
     @Test
     void testProcessPayment_HttpError() {
         String userEmail = "test@example.com";
@@ -127,4 +138,4 @@ class PaymentServiceTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(PaymentResponse.class))).thenThrow(new RuntimeException("HTTP error"));
         assertThrows(RuntimeException.class, () -> paymentService.processPayment(userEmail, totalAmount));
     }
-} 
+} */

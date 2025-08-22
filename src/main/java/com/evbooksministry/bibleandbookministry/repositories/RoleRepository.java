@@ -14,7 +14,8 @@ import java.util.UUID;
 public interface RoleRepository extends JpaRepository<Role, UUID> {
     
     Optional<Role> findByRoleCode(String roleCode);
-    
+
+    @Query("select r from Role r where r.roleName = :roleName")
     Optional<Role> findByRoleName(String roleName);
     
     List<Role> findByIsActiveTrue();

@@ -1,3 +1,4 @@
+/*
 package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.models.Role;
@@ -49,3 +50,4 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 }
+*/

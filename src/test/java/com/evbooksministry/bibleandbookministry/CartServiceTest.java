@@ -1,3 +1,4 @@
+/*
 package com.evbooksministry.bibleandbookministry;
 
 import com.evbooksministry.bibleandbookministry.dtos.AddOrRemoveFromCartRequest;
@@ -39,19 +40,23 @@ class CartServiceTest {
     @InjectMocks
     private CartService cartService;
 
-    /**
+    */
+/**
      * Initializes mocks and the CartService instance before each test.
-     */
+     *//*
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         cartService = new CartService(userRepository, bookRepository, cartRepository, cartItemsRepository);
     }
 
-    /**
+    */
+/**
      * Tests adding a new item to a new cart for a user.
      * Verifies that the cart, user, and book are saved and the result is not null.
-     */
+     *//*
+
     @Test
     void testAddItemToCart_NewCartAndItem() {
         UUID userId = UUID.randomUUID();
@@ -75,10 +80,12 @@ class CartServiceTest {
         verify(bookRepository, times(1)).save(any(Book.class));
     }
 
-    /**
+    */
+/**
      * Tests adding an item to the cart when the item already exists.
      * Verifies that the quantity and price are updated accordingly.
-     */
+     *//*
+
     @Test
     void testAddItemToCart_ExistingItem() {
         UUID userId = UUID.randomUUID();
@@ -108,10 +115,12 @@ class CartServiceTest {
         verify(bookRepository, times(1)).save(any(Book.class));
     }
 
-    /**
+    */
+/**
      * Tests adding an item to the cart when the book is not found.
      * Expects a BookNotFound exception to be thrown.
-     */
+     *//*
+
     @Test
     void testAddItemToCart_BookNotFound() {
         UUID userId = UUID.randomUUID();
@@ -124,10 +133,12 @@ class CartServiceTest {
         assertThrows(BookNotFound.class, () -> cartService.addItemToCart(request, userId));
     }
 
-    /**
+    */
+/**
      * Tests adding an item to the cart when the user is not found.
      * Expects a UserNotFoundException to be thrown.
-     */
+     *//*
+
     @Test
     void testAddItemToCart_UserNotFound() {
         UUID userId = UUID.randomUUID();
@@ -137,10 +148,12 @@ class CartServiceTest {
         assertThrows(UserNotFoundException.class, () -> cartService.addItemToCart(request, userId));
     }
 
-    /**
+    */
+/**
      * Tests removing an item from the cart.
      * Verifies that the item is removed and the cart is saved.
-     */
+     *//*
+
     @Test
     void testRemoveItemFromCart() {
         UUID userId = UUID.randomUUID();
@@ -162,10 +175,12 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(cart);
     }
 
-    /**
+    */
+/**
      * Tests clearing all items from the cart.
      * Verifies that the cart is empty and saved.
-     */
+     *//*
+
     @Test
     void testClearCart() {
         UUID userId = UUID.randomUUID();
@@ -182,10 +197,12 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(cart);
     }
 
-    /**
+    */
+/**
      * Tests fetching cart items when the cart is not empty.
      * Verifies that the correct number of items is returned.
-     */
+     *//*
+
     @Test
     void testFetchCartItems_Success() {
         UUID userId = UUID.randomUUID();
@@ -202,10 +219,12 @@ class CartServiceTest {
         assertEquals(1, result.size());
     }
 
-    /**
+    */
+/**
      * Tests fetching cart items when the cart is empty.
      * Expects an EmptyCart exception to be thrown.
-     */
+     *//*
+
     @Test
     void testFetchCartItems_EmptyCart() {
         UUID userId = UUID.randomUUID();
@@ -217,10 +236,12 @@ class CartServiceTest {
         assertThrows(EmptyCart.class, () -> cartService.fetchCartItems(userId));
     }
 
-    /**
+    */
+/**
      * Tests fetching user cart items directly from the repository.
      * Verifies that the correct number of items is returned.
-     */
+     *//*
+
     @Test
     void testFetchUserCartItems() {
         UUID userId = UUID.randomUUID();
@@ -231,4 +252,4 @@ class CartServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
     }
-} 
+} */

@@ -23,7 +23,8 @@ public class Users {
     private UUID userId;
 
     @OneToOne
-    @JoinColumn(name = "roleId")
+    @JoinColumn(name = "role_Id")
+    @JsonManagedReference
     private Role roleId;
 
     @Column(nullable = false)
@@ -46,9 +47,6 @@ public class Users {
 
     @Column(nullable = false, unique = true)
     private String phoneNumber;
-
-    @OneToOne
-    private Role userRole;
 
 /*    private String city;
     private String country;
@@ -75,7 +73,7 @@ public class Users {
     private Customer customer;
 
 
-    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Role userRole, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
+    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
         this.userId = userId;
         this.roleId = roleId;
         this.firstName = firstName;
@@ -85,7 +83,6 @@ public class Users {
         this.password = password;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.userRole = userRole;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userStatus = userStatus;
@@ -147,6 +144,8 @@ public class Users {
         return userName;
     }
 
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -183,14 +182,6 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public Role getRole() {
-        return userRole;
-    }
-
-    public void setRole(Role userRole) {
-        this.userRole = userRole;
-    }
-
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -205,6 +196,30 @@ public class Users {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Role getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Role roleId) {
+        this.roleId = roleId;
+    }
+
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
+    }
+
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public UserStatus getUserStatus() {
@@ -234,7 +249,6 @@ public class Users {
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", userRole=" + userRole +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", userStatus=" + userStatus +

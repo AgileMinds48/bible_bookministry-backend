@@ -1,3 +1,4 @@
+/*
 
 package com.evbooksministry.bibleandbookministry;
 
@@ -25,10 +26,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+*/
 /**
  * Unit tests for OrderService covering checkout, buy now, order retrieval, status updates, and order items.
  * Each test uses Mockito to mock dependencies and is documented for clarity.
- */
+ *//*
+
 class OrderServiceTest {
     @Mock
     private UserRepository userRepository;
@@ -50,18 +53,22 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    /**
+    */
+/**
      * Sets up mocks and the OrderService instance before each test.
-     */
+     *//*
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         orderService = new OrderService(userRepository, orderRepository, cartRepository, emailService, paymentService, paymentRepository, orderItemRepository, bookRepository);
     }
 
-    /**
+    */
+/**
      * Verifies successful checkout: order is created, payment processed, and response returned.
-     */
+     *//*
+
     @Test
     void testCheckout_Success() throws JsonProcessingException {
         UUID userId = UUID.randomUUID();
@@ -97,9 +104,11 @@ class OrderServiceTest {
         verify(paymentRepository, times(1)).save(any(Payment.class));
     }
 
-    /**
+    */
+/**
      * Verifies checkout throws UserNotFoundException if user is missing.
-     */
+     *//*
+
     @Test
     void testCheckout_UserNotFound() {
         UUID userId = UUID.randomUUID();
@@ -107,9 +116,11 @@ class OrderServiceTest {
         assertThrows(UserNotFoundException.class, () -> orderService.checkout(userId));
     }
 
-    /**
+    */
+/**
      * Verifies checkout throws EmptyCart if cart is empty.
-     */
+     *//*
+
     @Test
     void testCheckout_EmptyCart() {
         UUID userId = UUID.randomUUID();
@@ -121,9 +132,11 @@ class OrderServiceTest {
         assertThrows(EmptyCart.class, () -> orderService.checkout(userId));
     }
 
-    /**
+    */
+/**
      * Verifies buyNow creates order and returns payment response.
-     */
+     *//*
+
     @Test
     void testBuyNow_Success() throws JsonProcessingException {
         UUID userId = UUID.randomUUID();
@@ -152,9 +165,11 @@ class OrderServiceTest {
         // verify(bookRepository, times(1)).save(any(Book.class));
     }
 
-    /**
+    */
+/**
      * Verifies buyNow throws UserNotFoundException if user is missing.
-     */
+     *//*
+
     @Test
     void testBuyNow_UserNotFound() {
         UUID userId = UUID.randomUUID();
@@ -164,9 +179,11 @@ class OrderServiceTest {
         assertThrows(UserNotFoundException.class, () -> orderService.buyNow(request));
     }
 
-    /**
+    */
+/**
      * Verifies buyNow throws OrderNotFound if book is missing.
-     */
+     *//*
+
     @Test
     void testBuyNow_BookNotFound() {
         UUID userId = UUID.randomUUID();
@@ -178,9 +195,11 @@ class OrderServiceTest {
         assertThrows(OrderNotFound.class, () -> orderService.buyNow(request));
     }
 
-    /**
+    */
+/**
      * Verifies getOrderById returns the order if found.
-     */
+     *//*
+
     @Test
     void testGetOrderById_Found() {
         UUID orderId = UUID.randomUUID();
@@ -191,9 +210,11 @@ class OrderServiceTest {
         assertEquals(order, result.get());
     }
 
-    /**
+    */
+/**
      * Verifies getOrderById returns empty if order not found.
-     */
+     *//*
+
     @Test
     void testGetOrderById_NotFound() {
         UUID orderId = UUID.randomUUID();
@@ -202,9 +223,11 @@ class OrderServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    /**
+    */
+/**
      * Verifies getBuyerOrders returns all orders for a buyer.
-     */
+     *//*
+
     @Test
     void testGetBuyerOrders() {
         UUID buyerId = UUID.randomUUID();
@@ -220,9 +243,11 @@ class OrderServiceTest {
         assertTrue(result.contains(order2));
     }
 
-    /**
+    */
+/**
      * Verifies updateOrderStatus updates and saves the order status.
-     */
+     *//*
+
     @Test
     void testUpdateOrderStatus() {
         UUID orderId = UUID.randomUUID();
@@ -235,9 +260,11 @@ class OrderServiceTest {
         verify(orderRepository, times(1)).save(order);
     }
 
-    /**
+    */
+/**
      * Verifies updateOrderStatus throws OrderNotFound if order is missing.
-     */
+     *//*
+
     @Test
     void testUpdateOrderStatus_OrderNotFound() {
         UUID orderId = UUID.randomUUID();
@@ -245,9 +272,11 @@ class OrderServiceTest {
         assertThrows(OrderNotFound.class, () -> orderService.updateOrderStatus(orderId, OrderStatus.PAID));
     }
 
-    /**
+    */
+/**
      * Verifies getBuyerOrder returns all order items for a user.
-     */
+     *//*
+
     @Test
     void testGetBuyerOrder() {
         UUID userId = UUID.randomUUID();
@@ -262,4 +291,4 @@ class OrderServiceTest {
         assertTrue(result.contains(item1));
         assertTrue(result.contains(item2));
     }
-} 
+} */

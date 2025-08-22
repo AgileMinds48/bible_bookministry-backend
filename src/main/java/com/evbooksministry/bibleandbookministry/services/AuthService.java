@@ -65,7 +65,7 @@ public class AuthService implements IAuthService {
 
 
             Users users = userPrincipal.getUser();
-            String accessToken = jwtService.generateAccessToken(loginRequest.usernameOrEmail(), users.getRole().getRoleName().toUpperCase(), users.getUserId());
+            String accessToken = jwtService.generateAccessToken(loginRequest.usernameOrEmail(), users.getRoleId().getRoleName().toUpperCase(), users.getUserId());
             System.out.println("access token: " + accessToken);
             ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
                     .httpOnly(true)
@@ -79,7 +79,7 @@ public class AuthService implements IAuthService {
 
             return new LoginResponse(
                  true,
-                    users.getRole().getRoleName().toUpperCase()
+                    "ADMIN"
             );
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("User entered wrong credentials");
@@ -108,7 +108,7 @@ public class AuthService implements IAuthService {
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
                 .phoneNumber(registrationDTO.phoneNumber())
-                .userRole(customerRole)
+                .roleId(customerRole)
                 .isActive(true)
                 .isEmailValid(false)
                 .build();

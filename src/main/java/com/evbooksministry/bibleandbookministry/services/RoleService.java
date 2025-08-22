@@ -10,6 +10,7 @@ import com.evbooksministry.bibleandbookministry.models.Role;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.RoleRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class RoleService {
         this.roleMapper = roleMapper;
         this.userRepository = userRepository1;
     }
-    
+
+    @Transactional
     public RoleDTO createRole(CreateRoleRequest request, UUID user) {
         // Check if role code already exists
         if (roleRepository.existsByRoleCode(request.roleCode())) {

@@ -53,6 +53,7 @@ public class JWTService {
             claims.put("customerId", user.getUserId().toString());
         }
         claims.put("role", role);
+        claims.put("username", user.getUserName());
         System.out.println("expiration time in jwt service: " + expirationTime);
 
         return Jwts.builder()
@@ -89,7 +90,12 @@ public class JWTService {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return Jwts.parser()
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username", String.class);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -122,7 +128,7 @@ public class JWTService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .get("roleId", String.class);
+                .get("role", String.class);
     }
 
     public UUID getCustomerId(HttpServletRequest request) {
@@ -140,6 +146,11 @@ public class JWTService {
     public UUID extractUserId(HttpServletRequest request){
         String authToken = getTokenFromCookie(request.getCookies());
         return extractCustomerId(authToken);
+    }
+
+    public UUID extractAdminId(HttpServletRequest request){
+        String authToken = getTokenFromCookie(request.getCookies());
+        return extractAdminId(authToken);
     }
 
     private String getTokenFromCookie(Cookie[] cookies) {

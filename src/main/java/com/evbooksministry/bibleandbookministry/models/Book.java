@@ -47,8 +47,7 @@ public class Book {
     @Column(nullable = false)
     private String bookAuthor;
 
-    @Size(max = 255)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String bookDescription;
 
     @Size(max = 255)

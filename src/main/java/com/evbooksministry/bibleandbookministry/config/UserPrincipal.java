@@ -33,7 +33,7 @@ public class UserPrincipal implements UserDetails {
     }
 
     private Collection<? extends GrantedAuthority> createAuthorities(Users user) {
-        return List.of(new SimpleGrantedAuthority(user.getRoles().getRoleName()));
+        return List.of(new SimpleGrantedAuthority(user.getRoleId().getRoleName()));
     }
 
     @Override
@@ -41,10 +41,15 @@ public class UserPrincipal implements UserDetails {
         return user.getPassword();
     }
 
-    @Override
-    public String getUsername() {
+    public String getUserEmail() {
         return user.getEmail();
     }
+
+    @Override
+    public String getUsername() {
+        return user.getUserName();
+    }
+
 
     @Override
     public boolean isAccountNonExpired() {

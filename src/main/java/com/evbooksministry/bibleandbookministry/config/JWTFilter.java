@@ -41,8 +41,8 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        if (uri.equalsIgnoreCase("/auth/login")
-                || uri.equalsIgnoreCase("/auth/signup")){
+        if (uri.equalsIgnoreCase("/api/v1/auth/login")
+                || uri.equalsIgnoreCase("/api/v1/auth/signup")){
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,6 +53,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         String token = getTokenFromCookie(request.getCookies());
+
         System.out.println("token from cookie: " + token);
         if (token == null) {
             filterChain.doFilter(request, response);
@@ -62,24 +63,28 @@ public class JWTFilter extends OncePerRequestFilter {
             final String userEmail = jwtService.extractUsername(token);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("auth object: " + authentication);
 
             if(userEmail != null && authentication == null){
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
                 String role = jwtService.extractRole(token);
+                System.out.println("user role: " + role);
 
                 List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
                 System.out.println("assigned authorities: " + authorities);
 
-                if (jwtService.validateToken(token, userDetails)) {
+                boolean isValid = jwtService.validateToken(token, userDetails);
+                System.out.println("is token valid?: " + isValid);
+                if (isValid) {
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, authorities
                     );
 
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    System.out.println("authtoken: " + authenticationToken.toString());
                 }
             }
-
             filterChain.doFilter(request, response);
         }catch (Exception e){
             e.printStackTrace();

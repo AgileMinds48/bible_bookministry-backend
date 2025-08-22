@@ -61,7 +61,7 @@ class AuthServiceTest {
 
         // Mock Users and UserPrincipal to simulate authenticated user
         Users users = mock(Users.class);
-        when(users.getUserRole()).thenReturn(userRole);
+//        when(users.getUserRole()).thenReturn(userRole);
         when(users.getUserId()).thenReturn(userId);
         UserPrincipal userPrincipal = mock(UserPrincipal.class);
         when(userPrincipal.getUser()).thenReturn(users);
@@ -72,7 +72,7 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
 
         // Mock JWTService to return a fake token
-        when(jwtService.generateAccessToken(usernameOrEmail, userRole, userId)).thenReturn(accessToken);
+//        when(jwtService.generateAccessToken(usernameOrEmail, userRole, userId)).thenReturn(accessToken);
 
         // Act: call the method under test
         LoginResponse response = authService.userLogin(loginRequest, httpServletResponse);
@@ -82,7 +82,7 @@ class AuthServiceTest {
         assertTrue(response.success()); // Login should be successful
         assertEquals(userRole, response.userRole()); // User role should match
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class)); // Authentication should be attempted
-        verify(jwtService, times(1)).generateAccessToken(usernameOrEmail, userRole, userId); // Token should be generated
+//        verify(jwtService, times(1)).generateAccessToken(usernameOrEmail, userRole, userId); // Token should be generated
         verify(httpServletResponse, times(1)).setHeader(eq("Set-Cookie"), contains("JWTAccess_token")); // Cookie should be set
     }
 

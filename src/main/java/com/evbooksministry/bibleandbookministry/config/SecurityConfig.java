@@ -38,39 +38,51 @@ public class SecurityConfig {
         return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        auth -> auth
-                                // Public endpoints - no authentication required
-                                .requestMatchers("/api/v1/auth/signup","/api/v1/auth/login","/api/v1/admin/register",
-                                        "/swagger-ui/**", "/v3/api-docs/**", "/api/v1/webhook",
-                                        "/api/v1/books/public/**", "/api/v1/books/search")
-                                .permitAll()
-                                
-                                // Admin-only endpoints
-                                .requestMatchers("/api/v1/admin/**", 
-                                        "/api/v1/order/update-status", 
-                                        "/api/v1/books/update",
-                                        "/api/v1/books/update-media",
-                                        "/api/v1/books/update-details",
-                                        "/api/v1/books/remove-product/**",
-                                        "/api/v1/users/**",
-                                        "/api/v1/orders/**")
-                                .hasRole("ADMIN")
-                                
-                                // Customer endpoints
-                                .requestMatchers("/api/v1/cart/**",
-                                        "/api/v1/order/customer/**",
-                                        "/api/v1/profile/**",
-                                        "/api/v1/reviews/**")
-                                .hasRole("CUSTOMER")
-                                
-                                // Shared endpoints for both roles
-                                .requestMatchers("/api/v1/books/**",
-                                        "/api/v1/order/checkout")
-                                .hasAnyRole("ADMIN", "CUSTOMER")
-                                
-                                // All other requests require authentication
-                                .anyRequest().authenticated()
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - no authentication required (most specific first)
+                        .requestMatchers(
+                                "/api/v1/auth/signup",
+                                "/api/v1/auth/login",
+                                "/api/v1/admin/register",
+                                "/api/v1/webhook",
+                                "/api/v1/books/public/**",
+                                "/api/v1/books/search",
+                                "/api/v1/roles/create",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // Admin-only endpoints (more specific patterns first)
+                        .requestMatchers(
+                                "/api/v1/admin/**",
+                                "/api/v1/order/update-status",
+                                "/api/v1/books/update",
+                                "/api/v1/books/update-media",
+                                "/api/v1/books/update-details",
+                                "/api/v1/books/remove-product/**",
+                                "/api/v1/users/**",
+                                "/api/v1/orders/**", // Fixed: was "/api/v1/orders/*"
+                                "/api/v1/admin/books/get-available",
+                                "/api/v1/admin/orders/total-sales" // Fixed: added leading slash
+                        ).hasRole("ADMIN")
+
+                        // Customer endpoints
+                        .requestMatchers(
+                                "/api/v1/cart/**",
+                                "/api/v1/order/customer/**",
+                                "/api/v1/profile/**",
+                                "/api/v1/reviews/**"
+                        ).hasRole("CUSTOMER")
+
+                        // Shared endpoints requiring authentication (any authenticated user)
+                        .requestMatchers(
+                                "/api/v1/books/details/**",
+                                "/api/v1/books/list",
+                                "/api/v1/order/checkout"
+                        ).authenticated()
+
+                        // Deny all other requests
+                        .anyRequest().denyAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
@@ -86,6 +98,7 @@ public class SecurityConfig {
         configuration.addAllowedOriginPattern("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("*");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

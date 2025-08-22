@@ -26,9 +26,10 @@ public class RoleController {
         this.jwtService = jwtService;
     }
     
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<RoleDTO> createRole(@RequestBody CreateRoleRequest request) {
-        UUID userId = jwtService.extractUserId(httpServletRequest);
+        UUID userId = jwtService.extractAdminId(httpServletRequest);
+        System.out.println("admin Id " + userId);
         RoleDTO createdRole = roleService.createRole(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
     }

@@ -2,7 +2,6 @@ package com.evbooksministry.bibleandbookministry.controllers;
 
 import com.evbooksministry.bibleandbookministry.config.EmailService;
 import com.evbooksministry.bibleandbookministry.dtos.EmailRequest;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.OrderNotFound;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import com.evbooksministry.bibleandbookministry.models.Users;
@@ -59,7 +58,7 @@ public class PaystackWebhook {
             System.out.println("Transaction id: " + transactionId);
 
             List<CustomerOrders> orders = orderRepository.findByOrderReference(UUID.fromString(reference));
-            Set<Users> admins = userRepository.findByUserRole(UserRole.ADMIN);
+            Set<Users> admins = userRepository.findByUserRole("ADMIN");
             for (Users admin : admins) {
                 EmailRequest adminAlert = new EmailRequest(
                         admin.getEmail(),
