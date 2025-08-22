@@ -69,7 +69,7 @@ public class AuthService implements IAuthService {
             System.out.println("access token: " + accessToken);
             ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .sameSite("None")
                     .path("/")
                     .maxAge(3600)
