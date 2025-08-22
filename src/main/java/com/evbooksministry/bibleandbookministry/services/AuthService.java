@@ -80,7 +80,10 @@ public class AuthService implements IAuthService {
 
             return new LoginResponse(
                  true,
-                    "ADMIN"
+                    users.getRoleId().getRoleName(),
+                    users.getUserName(),
+                    users.getEmail()
+
             );
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("User entered wrong credentials");
