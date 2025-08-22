@@ -3,7 +3,6 @@ package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -24,8 +23,7 @@ import java.util.function.Function;
 public class JWTService {
     private final UserRepository userRepository;
 
-    Dotenv dotenv = Dotenv.configure().load();
-    private String secretKey = dotenv.get("JWT_SECRET");
+    private String secretKey = System.getenv("JWT_SECRET");
 
     public JWTService(UserRepository userRepository) {
         this.userRepository = userRepository;

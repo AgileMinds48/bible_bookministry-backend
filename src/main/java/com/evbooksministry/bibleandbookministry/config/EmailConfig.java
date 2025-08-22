@@ -1,6 +1,5 @@
 package com.evbooksministry.bibleandbookministry.config;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -10,10 +9,8 @@ import java.util.Properties;
 
 @Configuration
 public class EmailConfig {
-    Dotenv dotenv = Dotenv.configure().load();
-
-    private final String emailUsername = dotenv.get("MAIL_USERNAME");
-    private final String password = dotenv.get("MAIL_PASSWORD");
+    private final String emailUsername = System.getenv("MAIL_USERNAME");
+    private final String password = System.getenv("MAIL_PASSWORD");
 
     @Bean
     public JavaMailSender getJavaMailSender() {
