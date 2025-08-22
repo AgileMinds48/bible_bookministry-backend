@@ -53,12 +53,13 @@ public class JWTService {
         }
         claims.put("role", role);
         claims.put("username", user.getUserName());
+        claims.put("email",user.getEmail());
         System.out.println("expiration time in jwt service: " + expirationTime);
 
         return Jwts.builder()
                 .claims()
                 .add(claims)
-                .subject(username)
+                .subject("Auth token")
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .and()
