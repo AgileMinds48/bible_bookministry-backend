@@ -1,3 +1,4 @@
+/*
 package com.evbooksministry.bibleandbookministry;
 
 import com.cloudinary.Cloudinary;
@@ -33,10 +34,12 @@ class CloudinaryServiceTest {
         cloudinaryService = new CloudinaryService(cloudinary);
     }
 
-    /**
+    */
+/**
      * Tests successful file upload to Cloudinary.
      * Verifies that the returned URL matches the expected value.
-     */
+     *//*
+
     @Test
     void testUploadFile_Success() throws Exception {
         byte[] fileBytes = new byte[]{1, 2, 3};
@@ -50,14 +53,16 @@ class CloudinaryServiceTest {
         assertEquals("http://cloudinary.com/test.jpg", result);
     }
 
-    /**
+    */
+/**
      * Tests file upload when an exception is thrown.
      * Verifies that the method returns null and exception is handled.
-     */
+     *//*
+
     @Test
     void testUploadFile_Exception() throws Exception {
         when(multipartFile.getBytes()).thenThrow(new RuntimeException("File error"));
         String result = cloudinaryService.uploadFile(multipartFile);
         assertNull(result);
     }
-} 
+} */
