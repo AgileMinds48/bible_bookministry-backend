@@ -4,14 +4,11 @@ import com.evbooksministry.bibleandbookministry.config.EmailService;
 import com.evbooksministry.bibleandbookministry.dtos.EmailRequest;
 import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.OrderNotFound;
-import com.evbooksministry.bibleandbookministry.models.Cart;
 import com.evbooksministry.bibleandbookministry.models.CustomerOrders;
 import com.evbooksministry.bibleandbookministry.models.Users;
-import com.evbooksministry.bibleandbookministry.repositories.CartRepository;
 import com.evbooksministry.bibleandbookministry.repositories.OrderRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.utils.Hex;
@@ -24,25 +21,23 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.evbooksministry.bibleandbookministry.enums.OrderStatus.PAID;
 
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 public class PaystackWebhook {
     private final OrderRepository orderRepository;
     private static final String API_SECRET_KEY = System.getenv("PAYSTACK_SECRET");
-    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
 
     public PaystackWebhook(OrderRepository orderRepository,
-                                     CartRepository cartRepository,
-                                     UserRepository userRepository,
-                                    EmailService emailService) {
+                           UserRepository userRepository,
+                           EmailService emailService) {
         this.orderRepository = orderRepository;
-        this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
     }
@@ -63,6 +58,7 @@ public class PaystackWebhook {
             System.out.println("Transaction reference: " + reference);
             System.out.println("Transaction id: " + transactionId);
 
+            List<CustomerOrders> orders = orderRepository.findByOrderReference(UUID.fromString(reference));
             Set<Users> admins = userRepository.findByUserRole(UserRole.ADMIN);
             for (Users admin : admins) {
                 EmailRequest adminAlert = new EmailRequest(
@@ -70,9 +66,10 @@ public class PaystackWebhook {
                         "New Sale"
                 );
                 Context adminContext = new Context();
+                adminContext.setVariable("totalPrice", orders.getFirst().getTotalPrice());
                 emailService.sendEmail(adminAlert, "NewSale", adminContext);
             }
-            List<CustomerOrders> order = orderRepository.findByOrderReference(reference);
+            List<CustomerOrders> order = orderRepository.findByOrderReference(UUID.fromString(reference));
             if (order.isEmpty()) {
                 throw new OrderNotFound();
             } else {
@@ -83,9 +80,6 @@ public class PaystackWebhook {
                 }
 
             }
-            Cart cart = order.getFirst().getUser().getUserCart();
-            cart.getCartItems().clear();
-            cartRepository.save(cart);
 
 
 

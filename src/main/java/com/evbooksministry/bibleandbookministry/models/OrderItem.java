@@ -1,5 +1,8 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -12,16 +15,82 @@ public class OrderItem {
     private UUID orderItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private CustomerOrders customerOrders;
+    @JoinColumn(name = "orderId")
+    @JsonBackReference
+    private CustomerOrders customerOrderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Book book;
+    @JoinColumn(name = "bookId")
+    @JsonManagedReference
+    private Book bookId;
 
-    private int quantity;
+    private Integer quantity;
 
-    private BigDecimal price;
+    @Column(nullable = false, scale = 2)
+    private BigDecimal unitPrice;
 
+    @Column(nullable = false, scale = 2)
     private BigDecimal total;
+
+    @Enumerated(EnumType.STRING)
+    private DeleteYn deleteYn;
+
+    @PrePersist
+    protected void onCreate(){
+        this.total = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        this.deleteYn = DeleteYn.N;
+    }
+
+    public OrderItem(UUID orderItemId,
+                     CustomerOrders customerOrderId,
+                     Book bookId,
+                     Integer quantity,
+                     BigDecimal unitPrice,
+                     BigDecimal total,
+                     DeleteYn deleteYn) {
+        this.orderItemId = orderItemId;
+        this.customerOrderId = customerOrderId;
+        this.bookId = bookId;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+        this.total = total;
+        this.deleteYn = deleteYn;
+    }
+
+    public OrderItem() {
+    }
+
+    public CustomerOrders getCustomerOrderId() {
+        return customerOrderId;
+    }
+
+    public void setCustomerOrderId(CustomerOrders customerOrderId) {
+        this.customerOrderId = customerOrderId;
+    }
+
+    public Book getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Book bookId) {
+        this.bookId = bookId;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
+    }
+
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
+    }
 
     public BigDecimal getTotal() {
         return total;
@@ -40,45 +109,45 @@ public class OrderItem {
     }
 
     public CustomerOrders getOrder() {
-        return customerOrders;
+        return customerOrderId;
     }
 
     public void setOrder(CustomerOrders customerOrders) {
-        this.customerOrders = customerOrders;
+        this.customerOrderId = customerOrders;
     }
 
     public Book getBook() {
-        return book;
+        return bookId;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBook(Book bookId) {
+        this.bookId = bookId;
     }
 
-    public int getQuantity() {
+    public Integer getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
 
     public BigDecimal getPrice() {
-        return price;
+        return unitPrice;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     @Override
     public String toString() {
         return "OrderItem{" +
                 "orderItemId=" + orderItemId +
-                ", customerOrders=" + customerOrders +
-                ", book=" + book +
+                ", customerOrderId=" + customerOrderId +
+                ", bookId=" + bookId +
                 ", quantity=" + quantity +
-                ", price=" + price +
+                ", unitPrice=" + unitPrice +
                 ", total=" + total +
                 '}';
     }

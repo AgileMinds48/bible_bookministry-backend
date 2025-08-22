@@ -1,5 +1,8 @@
 package com.evbooksministry.bibleandbookministry;
 
+import com.evbooksministry.bibleandbookministry.config.EmailService;
+import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
+import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.mappers.UserMapper;
@@ -8,22 +11,22 @@ import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.services.AdminService;
 import com.evbooksministry.bibleandbookministry.services.BookService;
-import com.evbooksministry.bibleandbookministry.config.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
-import org.springframework.data.domain.Page;
-import java.util.UUID;
-import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
 
 // Test class for AdminService, using JUnit 5 and Mockito for mocking dependencies
 class AdminServiceTest {
@@ -97,7 +100,7 @@ class AdminServiceTest {
         UUID userId = UUID.randomUUID();
         Users user = mock(Users.class);
         UserDTO userDTO = mock(UserDTO.class);
-        when(userRepository.findByUserId(userId)).thenReturn(user);
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
         when(userMapper.userEntityToUserDTO(user)).thenReturn(userDTO);
         UserDTO result = adminService.getUserById(userId);
         assertNotNull(result);

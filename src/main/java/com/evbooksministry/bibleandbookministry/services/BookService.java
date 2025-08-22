@@ -1,13 +1,20 @@
 package com.evbooksministry.bibleandbookministry.services;
 
 import com.evbooksministry.bibleandbookministry.dtos.*;
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
+import com.evbooksministry.bibleandbookministry.exceptions.CategoryDoesNotExist;
+import com.evbooksministry.bibleandbookministry.exceptions.EmployeeNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidDetails;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.models.Book;
+import com.evbooksministry.bibleandbookministry.models.Category;
+import com.evbooksministry.bibleandbookministry.models.Employee;
+import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
+import com.evbooksministry.bibleandbookministry.repositories.CategoryRepository;
+import com.evbooksministry.bibleandbookministry.repositories.EmployeeRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
+import com.evbooksministry.bibleandbookministry.serviceInterfaces.IBookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,41 +31,53 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class BookService {
+public class BookService implements IBookService {
     private final BookRepository bookRepository;
     private final CloudinaryService cloudinaryService;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
     private final BookMapper bookMapper;
+    private final EmployeeRepository employeeRepository;
+    private final CategoryRepository categoryRepository;
 
     public BookService(BookRepository bookRepository,
                        CloudinaryService cloudinaryService,
                        ObjectMapper objectMapper,
-                       UserRepository userRepository, BookMapper bookMapper) {
+                       UserRepository userRepository,
+                       BookMapper bookMapper, EmployeeRepository employeeRepository, CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
         this.cloudinaryService = cloudinaryService;
         this.objectMapper = objectMapper;
         this.userRepository = userRepository;
         this.bookMapper = bookMapper;
+        this.employeeRepository = employeeRepository;
+        this.categoryRepository = categoryRepository;
     }
 
 
+
+
+    @Override
     public Page<BookDTO> getAllBooks(Pageable pageable) {
-        return bookRepository.getAllByAvailable(pageable);
+        return bookRepository.getAllByAvailable(pageable)
+                .map(bookMapper::bookEntityToBookDTO);
     }
 
+    @Override
     public Optional<BookDTO> getBookById(UUID bookId) {
         return bookRepository
                 .findByBookId(bookId)
                 .map(bookMapper::bookEntityToBookDTO);
     }
 
-    public BookDTO addNewBook(AddBookRequest request, MultipartFile[] bookImages
+    @Override
+    public BookDTO addNewBook(AddBookRequest request, MultipartFile[] bookImages, Users user
     ) throws IOException {
-        return addBook(request, bookRepository, bookImages);
+        return addBook(request, bookRepository, bookImages, user);
     }
 
 
+    @Override
     public void updateBook(BookDTO book){
         Book bookToUpdate = bookRepository.findById(book.bookId())
                 .orElseThrow(() -> new BookNotFound("Book not found"));
@@ -71,6 +90,7 @@ public class BookService {
         }
     }
 
+    @Override
     public void deleteProduct(UUID productId) {
         Optional<Book> bookToDelete = bookRepository.findById(productId);
         if (bookToDelete.isPresent()) {
@@ -82,39 +102,50 @@ public class BookService {
         }
     }
 
-    public Page<BookDTO> getProductsByCategory(String category, Pageable pageable) {
-        BookCategory categoryEnum = BookCategory.valueOf(category.toUpperCase());
-        System.out.println(categoryEnum);
+    @Override
+    public Page<BookDTO> getProductsByCategory(String categoryName, Pageable pageable) {
         return bookRepository
-                .findByBookCategory(categoryEnum, pageable)
+                .findByBookCategory(categoryName, pageable)
                 .map(bookMapper::bookEntityToBookDTO);
     }
 
-    private BookDTO addBook(AddBookRequest request,
-                                  BookRepository bookRepository, MultipartFile[] bookFiles) throws IOException {
+    public BookDTO addBook(AddBookRequest request,
+                           BookRepository bookRepository,
+                           MultipartFile[] bookFiles, Users admin) throws IOException {
         List<String> bookMedia = new ArrayList<>();
+
         for (MultipartFile file : bookFiles) {
             String prodFile = cloudinaryService.uploadFile(file);
             bookMedia.add(prodFile);
         }
 
+        Employee employee = employeeRepository.findEmployeeByUserId(admin.getUserId())
+                .orElseThrow(EmployeeNotFound::new);
+
+        Category bookCategory = categoryRepository.findByCategoryName(request.categoryName().toLowerCase())
+                .orElseThrow(CategoryDoesNotExist::new);
+
+
         Book book = Book.builder()
                 .bookTitle(request.bookTitle())
                 .bookDescription(request.bookDescription())
                 .bookPrice(request.bookPrice())
+                .bookAuthor(request.bookAuthor())
                 .quantity(request.quantity())
                 .amountInStock(request.amountInStock())
                 .isAvailable(true)
+                .addedBy(employee)
                 .createdOn(Timestamp.from(Instant.now()))
                 .updatedOn(Timestamp.from(Instant.now()))
                 .media(bookMedia)
-                .bookCategory(request.bookCategory())
+                .bookCategory(bookCategory)
                 .build();
         bookRepository.save(book);
 
         return bookMapper.bookEntityToBookDTO(book);
     }
 
+    @Override
     public BookDTO updateBookDetails(UpdateBookDetails request) throws InvalidDetails {
         UUID bookId = request.bookId();
 
@@ -123,7 +154,7 @@ public class BookService {
                 .orElseThrow(BookNotFound::new);
 
         switch (request.field().toLowerCase().trim()) {
-            case "bookTitle"-> {
+            case "booktitle" -> {
                 book.setBookTitle(request.value().toString());
                 bookRepository.save(book);
             }
@@ -138,8 +169,13 @@ public class BookService {
                 bookRepository.save(book);
             }
 
-            case "category"-> {
+/*            case "category"-> {
                 book.setBookCategory(objectMapper.convertValue(request.value().toString(), BookCategory.class));
+                bookRepository.save(book);
+            }*/
+
+            case "author" ->{
+                book.setBookAuthor(request.value().toString());
                 bookRepository.save(book);
             }
 
@@ -148,6 +184,7 @@ public class BookService {
         return bookMapper.bookEntityToBookDTO(book);
     }
 
+    @Override
     public BookDTO updateProductMedia(UpdateBookMedia update) throws IOException {
         Book book = bookRepository.findByBookId(update.bookId())
                 .orElseThrow(() -> new BookNotFound("Product not found"));
@@ -162,13 +199,19 @@ public class BookService {
         return bookMapper.bookEntityToBookDTO(book);
     }
 
+    @Override
     public BookDTO updateProduct(UpdateBook request, MultipartFile[] bookFiles) throws IOException {
+
+        Category bookCategory = categoryRepository.findByCategoryName(request.categoryName())
+                .orElseThrow(CategoryDoesNotExist::new);
+
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(BookNotFound::new);
         book.setBookTitle(request.bookTitle());
+        book.setBookAuthor(request.bookAuthor());
         book.setBookDescription(request.bookDescription());
         book.setBookPrice(request.bookPrice());
-        book.setBookCategory(request.bookCategory());
+        book.setBookCategory(bookCategory);
         book.setQuantity(request.bookQuantity());
         book.setAvailable(true);
         book.setAmountInStock(request.amountInStock());

@@ -1,5 +1,6 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +41,19 @@ public class Role {
     
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    private DeleteYn deleteYn;
+
+    @OneToOne
+    @JoinColumn(name = "user_Id")
+    private Users createdBy;
+
+
+    @PrePersist
+    protected void onCreate(){
+        this.deleteYn = DeleteYn.N;
+    }
     
 /*    @ManyToMany(mappedBy = "roles")
     @Builder.Default

@@ -1,7 +1,7 @@
 package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.converter.StringListConverter;
-import com.evbooksministry.bibleandbookministry.enums.BookCategory;
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -34,6 +34,19 @@ public class Book {
     @Column(nullable = false)
     private String bookTitle;
 
+
+    @ManyToOne
+    @JoinColumn(name = "employeeId")
+    private Employee addedBy;
+
+    @OneToOne
+    @JoinColumn(name = "categoryId")
+    private Category bookCategory;
+
+    @Size(max = 100)
+    @Column(nullable = false)
+    private String bookAuthor;
+
     @Size(max = 255)
     @Column(nullable = false)
     private String bookDescription;
@@ -63,13 +76,15 @@ public class Book {
     private List<String> media = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private BookCategory bookCategory;
+    private DeleteYn deleteYn;
 
     @PrePersist
     protected void onCreate(){
         this.createdOn = Timestamp.from(Instant.now());
         this.bookValue = this.bookPrice.multiply(BigDecimal.valueOf(this.quantity));
         this.amountSold = 0;
+        this.deleteYn = DeleteYn.N;
+        this.isAvailable = true;
     }
 
     @PreUpdate
@@ -79,10 +94,27 @@ public class Book {
                 this.bookPrice.multiply(BigDecimal.valueOf(this.quantity));
     }
 
-
-    public Book(UUID bookId, String bookTitle, String bookDescription, BigDecimal bookPrice, Integer quantity, BigDecimal bookValue, Integer amountSold, Integer amountInStock, boolean isAvailable, Timestamp createdOn, Timestamp updatedOn, List<String> media, BookCategory bookCategory) {
+    public Book(UUID bookId,
+                String bookTitle,
+                Employee addedBy,
+                Category bookCategory,
+                String bookAuthor,
+                String bookDescription,
+                BigDecimal bookPrice,
+                Integer quantity,
+                BigDecimal bookValue,
+                Integer amountSold,
+                Integer amountInStock,
+                boolean isAvailable,
+                Timestamp createdOn,
+                Timestamp updatedOn,
+                List<String> media,
+                DeleteYn deleteYn) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
+        this.addedBy = addedBy;
+        this.bookCategory = bookCategory;
+        this.bookAuthor = bookAuthor;
         this.bookDescription = bookDescription;
         this.bookPrice = bookPrice;
         this.quantity = quantity;
@@ -93,7 +125,23 @@ public class Book {
         this.createdOn = createdOn;
         this.updatedOn = updatedOn;
         this.media = media;
-        this.bookCategory = bookCategory;
+        this.deleteYn = deleteYn;
+    }
+
+    public Employee getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(Employee addedBy) {
+        this.addedBy = addedBy;
+    }
+
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
+    }
+
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
     }
 
     public Book() {
@@ -195,11 +243,20 @@ public class Book {
         this.media = media;
     }
 
-    public BookCategory getBookCategory() {
+
+    public String getBookAuthor() {
+        return bookAuthor;
+    }
+
+    public void setBookAuthor(String bookAuthor) {
+        this.bookAuthor = bookAuthor;
+    }
+
+    public Category getBookCategory() {
         return bookCategory;
     }
 
-    public void setBookCategory(BookCategory bookCategory) {
+    public void setBookCategory(Category bookCategory) {
         this.bookCategory = bookCategory;
     }
 }

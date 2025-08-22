@@ -5,6 +5,7 @@ import com.evbooksministry.bibleandbookministry.dtos.AddOrRemoveFromCartRequest;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFoundException;
 import com.evbooksministry.bibleandbookministry.services.CartService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody AddOrRemoveFromCartRequest addRequest) {
         try{
-            UUID userID = extractID(request);
+            UUID userID = extractUserId(request);
             System.out.println("checkout user ID: " + userID);
             return new ResponseEntity<>(cartService.addItemToCart(addRequest, userID), HttpStatus.OK);
 
@@ -48,10 +49,10 @@ public class CartController {
 
     @DeleteMapping("/remove-item")
     public ResponseEntity<?> removeFromCart(@RequestBody AddOrRemoveFromCartRequest removeRequest) {
-        UUID userID = jwtService.getCustomerId(request);
+        UUID userID = extractUserId(request);
+        System.out.println("user Id in remove item from cart: " + userID);
         try{
-            cartService.removeItemFromCart(removeRequest, userID);
-            return new ResponseEntity<>("Item deleted successfully",HttpStatus.OK);
+            return new ResponseEntity<>(cartService.removeItemFromCart(removeRequest, userID), HttpStatus.OK);
         }catch(IllegalArgumentException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
@@ -60,7 +61,8 @@ public class CartController {
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart() {
         try{
-            UUID userId = jwtService.getCustomerId(request);
+            UUID userId = extractUserId(request);
+            System.out.println("User id in clear cart: " + userId);
             cartService.clearCart(userId);
         }catch(UserNotFoundException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
@@ -70,7 +72,23 @@ public class CartController {
 
     @GetMapping("/get-items")
     public ResponseEntity<?> getCartItems() {
-        UUID userID = jwtService.getCustomerId(request);
-        return ResponseEntity.ok(cartService.fetchUserCartItems(userID));
+        UUID userID = extractUserId(request);
+        return ResponseEntity.ok(cartService.fetchUserCart(userID));
+    }
+
+    private UUID extractUserId(HttpServletRequest request){
+        String authToken = getTokenFromCookie(request.getCookies());
+        return jwtService.extractCustomerId(authToken);
+    }
+
+    private String getTokenFromCookie(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("JWTAccess_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

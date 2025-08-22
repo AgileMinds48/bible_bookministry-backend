@@ -256,7 +256,7 @@ class OrderServiceTest {
         Set<OrderItem> items = new HashSet<>();
         items.add(item1);
         items.add(item2);
-        when(orderItemRepository.findByUserId(userId)).thenReturn(items);
+//        when(orderItemRepository.findByUserId(userId)).thenReturn(items);
         Set<OrderItem> result = orderService.getBuyerOrder(userId);
         assertEquals(2, result.size());
         assertTrue(result.contains(item1));

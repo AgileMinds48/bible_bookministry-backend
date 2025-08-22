@@ -4,24 +4,31 @@ import com.evbooksministry.bibleandbookministry.dtos.CreateRoleRequest;
 import com.evbooksministry.bibleandbookministry.dtos.RoleDTO;
 import com.evbooksministry.bibleandbookministry.exceptions.RoleAlreadyExistsException;
 import com.evbooksministry.bibleandbookministry.exceptions.RoleNotFoundException;
+import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
+import com.evbooksministry.bibleandbookministry.mappers.RoleMapper;
 import com.evbooksministry.bibleandbookministry.models.Role;
+import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.RoleRepository;
+import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleService {
     
     private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
+    private final UserRepository userRepository;
     
-    public RoleService(RoleRepository roleRepository) {
+    public RoleService(RoleRepository roleRepository, RoleMapper roleMapper, UserRepository userRepository, UserRepository userRepository1) {
         this.roleRepository = roleRepository;
+        this.roleMapper = roleMapper;
+        this.userRepository = userRepository1;
     }
     
-    public RoleDTO createRole(CreateRoleRequest request) {
+    public RoleDTO createRole(CreateRoleRequest request, UUID user) {
         // Check if role code already exists
         if (roleRepository.existsByRoleCode(request.roleCode())) {
             throw new RoleAlreadyExistsException("Role with code " + request.roleCode() + " already exists");
@@ -31,42 +38,46 @@ public class RoleService {
         if (roleRepository.existsByRoleName(request.roleName())) {
             throw new RoleAlreadyExistsException("Role with name " + request.roleName() + " already exists");
         }
+
+        Users createdBy = userRepository.findByUserId(user)
+                .orElseThrow(UserNotFound::new);
         
         Role role = Role.builder()
                 .roleName(request.roleName())
                 .roleCode(request.roleCode())
                 .description(request.description())
                 .isActive(true)
+                .createdBy(createdBy)
                 .build();
         
         Role savedRole = roleRepository.save(role);
-        return convertToDTO(savedRole);
+        return roleMapper.convertToDTO(savedRole);
     }
     
     public RoleDTO getRoleById(UUID roleId) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with id: " + roleId));
-        return convertToDTO(role);
+        return roleMapper.convertToDTO(role);
     }
     
     public RoleDTO getRoleByCode(String roleCode) {
         Role role = roleRepository.findByRoleCode(roleCode)
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with code: " + roleCode));
-        return convertToDTO(role);
+        return roleMapper.convertToDTO(role);
     }
     
     public List<RoleDTO> getAllActiveRoles() {
         return roleRepository.findByIsActiveTrue()
                 .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                .map(roleMapper::convertToDTO)
+                .toList();
     }
     
     public List<RoleDTO> getAllRoles() {
         return roleRepository.findAll()
                 .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                .map(roleMapper::convertToDTO)
+                .toList();
     }
     
     public RoleDTO updateRole(UUID roleId, CreateRoleRequest request) {
@@ -90,7 +101,7 @@ public class RoleService {
         role.setDescription(request.description());
         
         Role updatedRole = roleRepository.save(role);
-        return convertToDTO(updatedRole);
+        return roleMapper.convertToDTO(updatedRole);
     }
     
     public void deleteRole(UUID roleId) {
@@ -118,15 +129,5 @@ public class RoleService {
     public Role getRoleEntityByCode(String roleCode) {
         return roleRepository.findByRoleCode(roleCode)
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with code: " + roleCode));
-    }
-    
-    private RoleDTO convertToDTO(Role role) {
-        return new RoleDTO(
-                role.getRoleId(),
-                role.getRoleName(),
-                role.getRoleCode(),
-                role.getDescription(),
-                role.isActive()
-        );
     }
 }

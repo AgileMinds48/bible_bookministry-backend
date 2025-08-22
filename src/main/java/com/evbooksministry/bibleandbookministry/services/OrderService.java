@@ -3,190 +3,395 @@ package com.evbooksministry.bibleandbookministry.services;
 import com.evbooksministry.bibleandbookministry.config.EmailService;
 import com.evbooksministry.bibleandbookministry.dtos.BuyNow;
 import com.evbooksministry.bibleandbookministry.dtos.PaymentResponse;
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.OrderStatus;
-import com.evbooksministry.bibleandbookministry.exceptions.EmptyCart;
-import com.evbooksministry.bibleandbookministry.exceptions.OrderNotFound;
-import com.evbooksministry.bibleandbookministry.exceptions.UserNotFoundException;
+import com.evbooksministry.bibleandbookministry.exceptions.*;
 import com.evbooksministry.bibleandbookministry.models.*;
 import com.evbooksministry.bibleandbookministry.repositories.*;
+import com.evbooksministry.bibleandbookministry.serviceInterfaces.IOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.cache.annotation.Cacheable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
-import static com.evbooksministry.bibleandbookministry.enums.OrderStatus.PENDING;
-
+import static com.evbooksministry.bibleandbookministry.enums.OrderStatus.*;
 
 @Service
-public class OrderService {
+public class OrderService implements IOrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
     private final EmailService emailService;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
     private final OrderItemRepository orderItemRepository;
     private final BookRepository bookRepository;
+    private final CustomerRepository customerRepository;
 
     public OrderService(UserRepository userRepository,
                         OrderRepository orderRepository,
-                        CartRepository cartRepository,
                         EmailService emailService,
                         PaymentService paymentService,
                         PaymentRepository paymentRepository,
                         OrderItemRepository orderItemRepository,
-                        BookRepository bookRepository) {
+                        BookRepository bookRepository,
+                        CustomerRepository customerRepository) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
-        this.cartRepository = cartRepository;
         this.emailService = emailService;
         this.paymentService = paymentService;
         this.paymentRepository = paymentRepository;
         this.orderItemRepository = orderItemRepository;
         this.bookRepository = bookRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Transactional
     public PaymentResponse checkout(UUID userId) {
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        Cart cart = user.getUserCart();
+        logger.info("Starting checkout for user: {}", userId);
 
-        if (cart == null || cart.getCartItems().isEmpty()) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        Customer customer = customerRepository.getCustomerByUserId(user.getUserId())
+                .orElseThrow(CustomerNotFound::new);
+
+        CustomerOrders customerOrder = orderRepository.getCustomerOrdersByCustomerId(customer.getCustomerId());
+
+        Set<OrderItem> userCart = customerOrder.getOrderItems();
+
+        if (userCart == null || userCart.isEmpty()) {
             throw new EmptyCart("Cart is empty");
         }
 
-        // creating a new order
-        CustomerOrders customerOrders = new CustomerOrders();
-        customerOrders.setUser(user);
-        customerOrders.setCreatedAt(Timestamp.from(Instant.now()));
-        customerOrders.setOrderStatus(PENDING);
+        // Validate stock availability before creating order
+        validateStockAvailability(userCart);
 
-
-        Set<OrderItem> checkoutItems = new HashSet<>();
-        for (CartItems cartItem : cart.getCartItems()) {
-            OrderItem orderItem = getOrderItem(cartItem, customerOrders);
-            checkoutItems.add(orderItem);
-        }
-        System.out.println("checkout items: " + checkoutItems);
-
-//        customerOrders.setOrderItems(checkoutItems);
-        customerOrders.setTotalPrice(checkoutItems
-                .stream()
-                .map(OrderItem::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
-
-        // Save order first (without payment)
-        orderRepository.save(customerOrders);
-
-        System.out.println("customer orders: " + customerOrders);
-
-        // Update product sales
-        cart.getCartItems().forEach(cartItem -> {
-            Book book = cartItem.getBook();
-            book.setAmountSold(book.getAmountSold() + cartItem.getQuantity());
-            bookRepository.save(book);
-        });
+        // Create the order
+        CustomerOrders customerOrders = createOrderFromCart(customer, userCart);
 
         try {
-            // Process payment through Paystack
-            PaymentResponse paymentResponse = paymentService.processPayment(
-                    user.getEmail(),
-                    customerOrders.getTotalPrice()
-            );
+            // Process payment
+            PaymentResponse paymentResponse = processOrderPayment(user, customerOrders);
 
-            // payment record after successful payment processing
-            Payment payment = new Payment();
-            payment.setPaymentDate(LocalDateTime.now());
-            payment.setAmount(customerOrders.getTotalPrice().doubleValue());
-            payment.setCustomerOrders(customerOrders);
-            paymentRepository.save(payment);
+            // Update inventory and sales after successful payment
+            updateInventoryAndSales(customerOrders.getOrderItems());
 
-            // Link payment to order and save
-            customerOrders.setOrderPayment(payment);
-            customerOrders.setOrderReference(paymentResponse.data().reference());
-            orderRepository.save(customerOrders);
+            // Clear the cart after successful checkout
+            clearUserCart(customer.getCustomerId());
+
+            // Send confirmation email (async)
+            sendOrderConfirmationEmail(user, customerOrders);
+
+            logger.info("Checkout completed successfully for user: {} with order: {}",
+                    userId, customerOrders.getOrderReference());
 
             return paymentResponse;
 
         } catch (Exception e) {
-            // Handle payment failure
-            customerOrders.setOrderStatus(PENDING);
+            logger.error("Payment processing failed for user: {} with order: {}",
+                    userId, customerOrders.getOrderReference(), e);
+
+            // Update order status to failed
+            customerOrders.setOrderStatus(CANCELLED);
             orderRepository.save(customerOrders);
+
             throw new RuntimeException("Payment processing failed: " + e.getMessage(), e);
         }
     }
 
-    private static OrderItem getOrderItem(CartItems cartItem, CustomerOrders customerOrders) {
+    private void validateStockAvailability(Set<OrderItem> orderItems) {
+        for (OrderItem orderItem : orderItems) {
+            Book book = orderItem.getBook();
+            if (book.getAmountInStock() < orderItem.getQuantity()) {
+                throw new InsufficientStock();
+            }
+        }
+    }
+
+    private CustomerOrders createOrderFromCart(Customer customer, Set<OrderItem> cartItems) {
+        CustomerOrders order = new CustomerOrders();
+        order.setCustomerId(customer);
+        order.setCreatedAt(Timestamp.from(Instant.now()));
+        order.setOrderStatus(PENDING);
+        order.setOrderReference(UUID.randomUUID().toString());
+        order.setDeleteYn(DeleteYn.N);
+
+        // Create new order items (don't reuse cart items)
+        Set<OrderItem> orderItems = new HashSet<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (OrderItem cartItem : cartItems) {
+            OrderItem orderItem = createOrderItemFromCart(cartItem, order);
+            orderItems.add(orderItem);
+            totalPrice = totalPrice.add(orderItem.getTotal());
+        }
+
+        order.setOrderItems(orderItems);
+        order.setTotalPrice(totalPrice);
+
+        // Save order first, then items
+        orderRepository.save(order);
+        orderItemRepository.saveAll(orderItems);
+
+        logger.debug("Created order with {} items, total: {}", orderItems.size(), totalPrice);
+
+        return order;
+    }
+
+    private OrderItem createOrderItemFromCart(OrderItem cartItem, CustomerOrders order) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrder(order);
+        orderItem.setBook(cartItem.getBook());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setUnitPrice(cartItem.getUnitPrice());
+        orderItem.setTotal(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+
+        return orderItem;
+    }
+
+    private OrderItem createOrderItem(OrderItem cartItem, CustomerOrders customerOrders) {
         OrderItem orderItem = new OrderItem();
         orderItem.setOrder(customerOrders);
         orderItem.setBook(cartItem.getBook());
         orderItem.setQuantity(cartItem.getQuantity());
 
         BigDecimal unitPrice = cartItem.getPrice();
+        BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
-        orderItem.setPrice(unitPrice);
-        orderItem.setTotal(unitPrice);
+        orderItem.setUnitPrice(unitPrice);
+        orderItem.setTotal(totalPrice);
+
         return orderItem;
+    }
+
+    private PaymentResponse processOrderPayment(Users user, CustomerOrders customerOrders)
+            throws JsonProcessingException {
+        PaymentResponse paymentResponse = paymentService.processPayment(
+                user.getEmail(),
+                customerOrders.getTotalPrice()
+        );
+
+        // Create payment record
+        Payment payment = new Payment();
+        payment.setPaymentDate(Timestamp.from(Instant.now()));
+        payment.setAmount(customerOrders.getTotalPrice());
+        payment.setCustomerOrders(customerOrders);
+        payment.setPaymentReference(paymentResponse.data().reference());
+        paymentRepository.save(payment);
+
+        // Update order with payment info and mark as paid
+        customerOrders.setOrderPayment(payment);
+        customerOrders.setOrderReference(paymentResponse.data().reference());
+        customerOrders.setOrderStatus(PAID);
+        orderRepository.save(customerOrders);
+
+        return paymentResponse;
+    }
+
+    private void updateInventoryAndSales(Set<OrderItem> cartItems) {
+        for (OrderItem cartItem : cartItems) {
+            Book book = cartItem.getBook();
+
+            // Update sales count
+            int currentSold = book.getAmountSold() != null ? book.getAmountSold() : 0;
+            book.setAmountSold(currentSold + cartItem.getQuantity());
+
+            // Update stock
+            book.setAmountInStock(book.getAmountInStock() - cartItem.getQuantity());
+
+            bookRepository.save(book);
+        }
+    }
+
+    private void clearUserCart(UUID customerId) {
+
+        // Assuming you have a CartRepository to save the cleared cart
+        // cartRepository.save(cart);
+    }
+
+    private void sendOrderConfirmationEmail(Users user, CustomerOrders order) {
+        try {
+            // Implement email sending logic
+            emailService.sendOrderConfirmation(user.getEmail(), order);
+        } catch (Exception e) {
+            logger.error("Failed to send order confirmation email to: {}", user.getEmail(), e);
+            // Don't fail the order for email issues
+        }
     }
 
     @Transactional
     public PaymentResponse buyNow(BuyNow request) throws JsonProcessingException {
+        logger.info("Processing buy now for user: {} and book: {}", request.userID(), request.bookId());
+
         Users user = userRepository.findById(request.userID())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new OrderNotFound("Product not found"));
 
-        BigDecimal bookPrice = book.getBookPrice();
+        Customer customer = customerRepository.getCustomerByUserId(user.getUserId())
+                .orElseThrow(CustomerNotFound::new);
 
+        // Validate stock
+        if (book.getAmountInStock() < request.quantity()) {
+            throw new InsufficientStock();
+        }
+
+        BigDecimal unitPrice = book.getBookPrice();
+        BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(request.quantity()));
+
+        // Create order
         CustomerOrders customerOrders = new CustomerOrders();
-        customerOrders.setUser(user);
+        customerOrders.setCustomerId(customer);
         customerOrders.setCreatedAt(Timestamp.from(Instant.now()));
         customerOrders.setOrderStatus(PENDING);
+        customerOrders.setOrderReference(UUID.randomUUID().toString());
+        customerOrders.setTotalPrice(totalPrice);
 
+        // Create order item
         OrderItem orderItem = new OrderItem();
         orderItem.setOrder(customerOrders);
         orderItem.setBook(book);
         orderItem.setQuantity(request.quantity());
-        orderItem.setPrice(bookPrice);
-        orderItem.setTotal(bookPrice);
+        orderItem.setUnitPrice(unitPrice);
+        orderItem.setTotal(totalPrice);
 
         customerOrders.setOrderItems(new HashSet<>(Set.of(orderItem)));
-        customerOrders.setTotalPrice(bookPrice);
+
+        // Save order
         orderRepository.save(customerOrders);
+        orderItemRepository.save(orderItem);
 
-        book.setAmountSold(request.quantity());
-        book.setAmountInStock(book.getAmountInStock() - request.quantity());
-        bookRepository.save(book);
+        try {
+            // Process payment
+            PaymentResponse paymentResponse = paymentService.processPayment(
+                    user.getEmail(), totalPrice);
 
-        return paymentService.processPayment(user.getEmail(), bookPrice);
+            // Create payment record
+            Payment payment = new Payment();
+            payment.setPaymentDate(Timestamp.from(Instant.now()));
+            payment.setAmount(totalPrice);
+            payment.setCustomerOrders(customerOrders);
+            payment.setPaymentReference(paymentResponse.data().reference());
+            paymentRepository.save(payment);
+
+            // Update order
+            customerOrders.setOrderPayment(payment);
+            customerOrders.setOrderReference(paymentResponse.data().reference());
+            customerOrders.setOrderStatus(PAID);
+            orderRepository.save(customerOrders);
+
+            // Update book inventory and sales
+            int currentSold = book.getAmountSold() != null ? book.getAmountSold() : 0;
+            book.setAmountSold(currentSold + request.quantity());
+            book.setAmountInStock(book.getAmountInStock() - request.quantity());
+            bookRepository.save(book);
+
+            // Send confirmation email
+            sendOrderConfirmationEmail(user, customerOrders);
+
+            logger.info("Buy now completed successfully for user: {} with order: {}",
+                    request.userID(), customerOrders.getOrderReference());
+
+            return paymentResponse;
+
+        } catch (Exception e) {
+            logger.error("Buy now payment failed for user: {} with order: {}",
+                    request.userID(), customerOrders.getOrderReference(), e);
+
+            customerOrders.setOrderStatus(FAILED);
+            orderRepository.save(customerOrders);
+
+            throw new RuntimeException("Payment processing failed: " + e.getMessage(), e);
+        }
     }
 
     public Optional<CustomerOrders> getOrderById(UUID id) {
         return orderRepository.findById(id);
     }
 
-    @Cacheable(value = "orders")
-    public Set<CustomerOrders> getBuyerOrders(UUID buyerID) {
-        return orderRepository.findByUser_UserId(buyerID);
+    public Set<CustomerOrders> getBuyerOrders(UUID customerId) {
+        return orderRepository.findUserOrders(customerId);
     }
 
+    @Transactional
     public CustomerOrders updateOrderStatus(UUID orderId, OrderStatus status) {
         CustomerOrders customerOrders = orderRepository.findById(orderId)
                 .orElseThrow(OrderNotFound::new);
+
+        OrderStatus previousStatus = customerOrders.getOrderStatus();
         customerOrders.setOrderStatus(status);
-        return orderRepository.save(customerOrders);
+
+        CustomerOrders savedOrder = orderRepository.save(customerOrders);
+
+        logger.info("Order status updated from {} to {} for order: {}",
+                previousStatus, status, orderId);
+
+        return savedOrder;
     }
 
     public Set<OrderItem> getBuyerOrder(UUID userId) {
-        return orderItemRepository.findByUserId(userId);
+        return orderItemRepository.findByCustomerId(userId);
+    }
+
+/*    @Override
+    @Transactional
+    public CustomerOrderDTO createOrder(UUID customerId) {
+        // Implementation for creating order DTO
+        Users user = userRepository.findById(customerId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // Create order DTO logic here
+        CustomerOrderDTO customerOrderDTO = new CustomerOrderDTO();
+        // Set DTO properties
+
+        return customerOrderDTO;
+    }*/
+
+    @Override
+    @Transactional
+    public void cancelOrder(UUID orderId) {
+        CustomerOrders order = orderRepository.findById(orderId)
+                .orElseThrow(OrderNotFound::new);
+
+        // Only allow cancellation of pending or paid orders
+        if (order.getOrderStatus() == SHIPPED || order.getOrderStatus() == DELIVERED) {
+            throw new IllegalStateException("Cannot cancel shipped or delivered orders");
+        }
+
+        // Restore inventory if order was paid
+        if (order.getOrderStatus() == PAID) {
+            restoreInventory(order.getOrderItems());
+        }
+
+        order.setOrderStatus(CANCELLED);
+        orderRepository.save(order);
+
+        logger.info("Order cancelled: {}", orderId);
+    }
+
+    private void restoreInventory(Set<OrderItem> orderItems) {
+        for (OrderItem item : orderItems) {
+            Book book = item.getBook();
+            book.setAmountInStock(book.getAmountInStock() + item.getQuantity());
+
+            // Reduce sales count
+            int currentSold = book.getAmountSold() != null ? book.getAmountSold() : 0;
+            book.setAmountSold(Math.max(0, currentSold - item.getQuantity()));
+
+            bookRepository.save(book);
+        }
     }
 }

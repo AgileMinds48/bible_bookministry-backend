@@ -13,10 +13,25 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<CustomerOrders, UUID> {
 
-    @Query("select c from CustomerOrders c where c.user.userId  = :userId and c.orderStatus = :orderStatus")
+    @Query("select c from CustomerOrders c where c.customerId.user.userId  = :userId and c.orderStatus = :orderStatus")
     Set<CustomerOrders> findByUser_UserIdAndStatus(UUID userId, OrderStatus orderStatus);
 
-    Set<CustomerOrders> findByUser_UserId(UUID buyerID);
+    @Query("select c from CustomerOrders c where c.customerId.customerId = :customerId")
+    CustomerOrders getCustomerOrdersByCustomerId(UUID customerId);
 
-    List<CustomerOrders> findByOrderReference(String orderReference);
+    @Query("select c from CustomerOrders c where c.customerId.customerId = :customerId and c.deleteYn = 'N' ")
+    Set<CustomerOrders> findUserOrders(UUID customerId);
+
+
+    @Query("select count(c) from CustomerOrders c where c.deleteYn = 'N'")
+    Integer countTotalOrders();
+
+    @Query("select  c from CustomerOrders c where c.customerId.customerId = :customerId")
+    List<CustomerOrders> findCustomerOrders(UUID customerId);
+
+    @Query("select c from CustomerOrders c where c.orderReference = :reference")
+    List<CustomerOrders> findByOrderReference(UUID reference);
+
+    @Query("select c from CustomerOrders c order by c.createdAt")
+    List<CustomerOrders> getMostRecentOrders();
 }

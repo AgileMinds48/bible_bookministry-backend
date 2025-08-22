@@ -1,30 +1,30 @@
 package com.evbooksministry.bibleandbookministry.models;
 
+import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.Gender;
 import com.evbooksministry.bibleandbookministry.enums.UserStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 
 @Builder
 @Entity
-@Table(
-        name = "users", indexes = {
-        @Index(name = "idx_user_email", columnList = "email"),
-        @Index(name = "idx_user_role", columnList = "userRole")
-})
-@RequiredArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID userId;
+
+    @OneToOne
+    @JoinColumn(name = "roleId")
+    private Role roleId;
 
     @Column(nullable = false)
     private String firstName;
@@ -48,12 +48,11 @@ public class Users {
     private String phoneNumber;
 
     @OneToOne
+    private Role userRole;
 
-    private Role roles;
-
-    private String city;
+/*    private String city;
     private String country;
-    private String state;
+    private String state;*/
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -61,20 +60,24 @@ public class Users {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-
-    private String profilePictureURL;
-
-
-    @OneToOne(fetch = FetchType.LAZY)
-    private Cart userCart;
-
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
     private boolean isActive;
 
-    public Users(UUID userId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Role roles, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, String profilePictureURL, Cart userCart, UserStatus userStatus, boolean isActive) {
+    private boolean isEmailValid;
+
+    private DeleteYn deleteYn;
+
+    // One-to-One relationship with Customer
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Customer customer;
+
+
+    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Role userRole, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
         this.userId = userId;
+        this.roleId = roleId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
@@ -82,16 +85,30 @@ public class Users {
         this.password = password;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.roles = roles;
-        this.city = city;
-        this.country = country;
-        this.state = state;
+        this.userRole = userRole;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.profilePictureURL = profilePictureURL;
-        this.userCart = userCart;
         this.userStatus = userStatus;
         this.isActive = isActive;
+        this.isEmailValid = isEmailValid;
+        this.deleteYn = deleteYn;
+        this.customer = customer;
+    }
+
+    public Users() {
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = Timestamp.from(Instant.now());
+        this.deleteYn = DeleteYn.N;
+        this.isActive = false;
+        this.isEmailValid = false;
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = Timestamp.from(Instant.now());
     }
 
     public UUID getUserId() {
@@ -108,6 +125,14 @@ public class Users {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public boolean isEmailValid() {
+        return isEmailValid;
+    }
+
+    public void setEmailValid(boolean emailValid) {
+        isEmailValid = emailValid;
     }
 
     public String getLastName() {
@@ -158,33 +183,13 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public Role getRoles() {
-        return roles;
+    public Role getRole() {
+        return userRole;
     }
 
-    public void setRoles(Role roles) {
-        this.roles = roles;
+    public void setRole(Role userRole) {
+        this.userRole = userRole;
     }
-    
-/*    // Helper methods for role management
-    public void addRole(Role role) {
-        this.roles.add(role);
-        role.getUsers().add(this);
-    }
-    
-    public void removeRole(Role role) {
-        this.roles.remove(role);
-        role.getUsers().remove(this);
-    }
-    
-    public boolean hasRole(String roleCode) {
-        return this.roles.stream()
-                .anyMatch(role -> role.getRoleCode().equals(roleCode));
-    }
-    
-    public boolean hasRole(Role role) {
-        return this.roles.contains(role);
-    }*/
 
     public Timestamp getCreatedAt() {
         return createdAt;
@@ -200,46 +205,6 @@ public class Users {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public String getProfilePictureURL() {
-        return profilePictureURL;
-    }
-
-    public void setProfilePictureURL(String profilePictureURL) {
-        this.profilePictureURL = profilePictureURL;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public Cart getUserCart() {
-        return userCart;
-    }
-
-    public void setUserCart(Cart userCart) {
-        this.userCart = userCart;
     }
 
     public UserStatus getUserStatus() {
@@ -269,14 +234,9 @@ public class Users {
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", roles=" + roles +
-                ", city='" + city + '\'' +
-                ", country='" + country + '\'' +
-                ", state='" + state + '\'' +
+                ", userRole=" + userRole +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", profilePictureURL='" + profilePictureURL + '\'' +
-                ", userCart=" + userCart +
                 ", userStatus=" + userStatus +
                 '}';
     }

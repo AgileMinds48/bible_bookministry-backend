@@ -1,8 +1,10 @@
 package com.evbooksministry.bibleandbookministry.controllers;
 
+import com.evbooksministry.bibleandbookministry.config.JWTService;
 import com.evbooksministry.bibleandbookministry.dtos.CreateRoleRequest;
 import com.evbooksministry.bibleandbookministry.dtos.RoleDTO;
 import com.evbooksministry.bibleandbookministry.services.RoleService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +17,19 @@ import java.util.UUID;
 public class RoleController {
     
     private final RoleService roleService;
+    private final HttpServletRequest httpServletRequest;
+    private final JWTService jwtService;
     
-    public RoleController(RoleService roleService) {
+    public RoleController(RoleService roleService, HttpServletRequest httpServletRequest, JWTService jwtService) {
         this.roleService = roleService;
+        this.httpServletRequest = httpServletRequest;
+        this.jwtService = jwtService;
     }
     
     @PostMapping
     public ResponseEntity<RoleDTO> createRole(@RequestBody CreateRoleRequest request) {
-        RoleDTO createdRole = roleService.createRole(request);
+        UUID userId = jwtService.extractUserId(httpServletRequest);
+        RoleDTO createdRole = roleService.createRole(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
     }
     

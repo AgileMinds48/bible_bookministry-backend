@@ -1,20 +1,26 @@
 package com.evbooksministry.bibleandbookministry.services;
 
-import com.evbooksministry.bibleandbookministry.serviceInterfaces.BookUserService;
+import com.evbooksministry.bibleandbookministry.dtos.ChangePasswordRequest;
+import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
+import com.evbooksministry.bibleandbookministry.serviceInterfaces.IUserService;
 
-public class UserService<T> implements BookUserService {
+import java.util.UUID;
+
+public class UserService implements IUserService {
+
+
     @Override
-    public void addItem(Object item) {
+    public void updateProfile(UUID userId, UserDTO dto) {
 
     }
 
     @Override
-    public T getItem(Long itemId) {
-        return null;
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+
     }
 
     @Override
-    public void removeItem(Long itemId) {
+    public void deactivateAccount(UUID userId) {
 
     }
 }
