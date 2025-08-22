@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/api/v1/books/search",
                                 "/api/v1/roles/create",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "api/v1/books/all-books"
                         ).permitAll()
 
                         // Admin-only endpoints (more specific patterns first)
