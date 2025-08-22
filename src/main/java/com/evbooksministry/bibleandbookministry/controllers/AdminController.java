@@ -103,7 +103,7 @@ public class AdminController {
         return adminService.getUserById(userId);
     }
 
-    @PatchMapping("/update-details")
+    @PatchMapping("/book/update-details")
     public ResponseEntity<?> updateBookDetails(@RequestBody UpdateBookDetails request) throws InvalidDetails {
         try{
             return new ResponseEntity<>(bookService.updateBookDetails(request), HttpStatus.OK);
@@ -112,7 +112,7 @@ public class AdminController {
         }
     }
 
-    @PatchMapping("/update-media")
+    @PatchMapping("/book/update-media")
     public ResponseEntity<?> updateProductMedia(
             @RequestPart("productId")String productId,
             @RequestPart("media")MultipartFile[] media
@@ -143,7 +143,7 @@ public class AdminController {
         }
     }
 
-    @DeleteMapping("/remove-book/{productId}")
+    @DeleteMapping("/book/remove/{productId}")
     public ResponseEntity<?> removeProduct(@PathVariable UUID productId) {
         try {
             bookService.deleteProduct(productId);

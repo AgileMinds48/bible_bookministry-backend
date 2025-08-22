@@ -65,7 +65,21 @@ public class SecurityConfig {
                                 "/api/v1/orders/**", // Fixed: was "/api/v1/orders/*"
                                 "/api/v1/admin/books/get-available",
                                 "/api/v1/admin/orders/total-sales", // Fixed: added leading slash
-                                "/api/v1/admin/get-users"
+                                "/api/v1/admin/get-users",
+                                "/api/v1/admin/get-users",
+                                "/api/v1/admin/get-user/*",
+                                "/api/v1/admin/add-book",
+                                "/api/v1/admin/book/update-details",
+                                "/api/v1/admin/book/update-media",
+                                "/api/v1/admin/book/remove/*",
+                                "/api/v1/admin/books/get-available",
+                                "/api/v1/admin/orders/get-total",
+                                "/api/v1/admin/orders/total-sales",
+                                "/api/v1/admin/books/low-stock",
+                                "/api/v1/admin/orders/customer/*",
+                                "/api/v1/admin/books/highest-selling",
+                                "/api/v1/admin/category/create-defaults",
+                                "/api/v1/admin/category/new"
                         ).hasRole("ADMIN")
 
                         // Customer endpoints
