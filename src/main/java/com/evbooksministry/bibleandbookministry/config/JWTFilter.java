@@ -36,30 +36,32 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        final String authorizationHeader = request.getHeader("Authorization");
-
-
 
         String uri = request.getRequestURI();
 
+        // Skip authentication for login and signup endpoints
         if (uri.equalsIgnoreCase("/api/v1/auth/login")
                 || uri.equalsIgnoreCase("/api/v1/auth/signup")){
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+        // Try to get token from Authorization header first
+        String token = getTokenFromAuthorizationHeader(request);
+
+        // If no token in header, try to get from cookie
+        if (token == null) {
+            token = getTokenFromCookie(request.getCookies());
         }
 
-        String token = getTokenFromCookie(request.getCookies());
+        System.out.println("token from cookie/header: " + token);
 
-        System.out.println("token from cookie: " + token);
+        // If no token found anywhere, continue without authentication
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
+
         try{
             final String userEmail = jwtService.extractUsername(token);
 
@@ -76,6 +78,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
                 boolean isValid = jwtService.validateToken(token, userDetails);
                 System.out.println("is token valid?: " + isValid);
+
                 if (isValid) {
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, authorities
@@ -94,6 +97,16 @@ public class JWTFilter extends OncePerRequestFilter {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private String getTokenFromAuthorizationHeader(HttpServletRequest request) {
+        final String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7); // Remove "Bearer " prefix
+        }
+
+        return null;
     }
 
     private String getTokenFromCookie(Cookie[] cookies) {
