@@ -20,7 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -99,14 +99,14 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Add your frontend domains
-        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",           // Local development
                 "https://your-frontend-domain.com", // Your production frontend
                 "https://your-vercel-app.vercel.app" // If using Vercel
         ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // CRITICAL for cookies
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
