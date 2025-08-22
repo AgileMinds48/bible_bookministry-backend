@@ -86,7 +86,8 @@ public class SecurityConfig {
                         // Deny all other requests
                         .anyRequest().denyAll()
                 )
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -96,22 +97,18 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-
-        // Add your frontend domains
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",           // Local development
-                "https://your-frontend-domain.com", // Your production frontend
-                "https://your-vercel-app.vercel.app" // If using Vercel
+        var c = new CorsConfiguration();
+        c.setAllowedOrigins(List.of(
+                "http://localhost:3000",               // dev
+                "https://<your-frontend-domain>"       // prod UI if/when deployed
         ));
-
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // CRITICAL for cookies
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        c.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        c.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
+        c.setAllowCredentials(true);             // <-- required for cookies
+        c.setMaxAge(3600L);
+        var s = new UrlBasedCorsConfigurationSource();
+        s.registerCorsConfiguration("/**", c);
+        return s;
     }
 
     @Bean
