@@ -64,7 +64,8 @@ public class SecurityConfig {
                                 "/api/v1/users/**",
                                 "/api/v1/orders/**", // Fixed: was "/api/v1/orders/*"
                                 "/api/v1/admin/books/get-available",
-                                "/api/v1/admin/orders/total-sales" // Fixed: added leading slash
+                                "/api/v1/admin/orders/total-sales", // Fixed: added leading slash
+                                "/api/v1/admin/get-users"
                         ).hasRole("ADMIN")
 
                         // Customer endpoints
