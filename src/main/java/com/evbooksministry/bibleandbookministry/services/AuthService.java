@@ -5,14 +5,16 @@ import com.evbooksministry.bibleandbookministry.config.JWTService;
 import com.evbooksministry.bibleandbookministry.config.OTPService;
 import com.evbooksministry.bibleandbookministry.config.UserPrincipal;
 import com.evbooksministry.bibleandbookministry.dtos.*;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.enums.UserStatus;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
+import com.evbooksministry.bibleandbookministry.exceptions.RoleNotFoundException;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.models.Customer;
+import com.evbooksministry.bibleandbookministry.models.Role;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.CustomerRepository;
+import com.evbooksministry.bibleandbookministry.repositories.RoleRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.serviceInterfaces.IAuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,8 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -39,10 +39,11 @@ public class AuthService implements IAuthService {
     private final OTPService oTPService;
     private final CustomerRepository customerRepository;
     private final EmailService emailService;
+    private final RoleRepository roleRepository;
 
     public AuthService(JWTService jwtService,
                        UserRepository userRepository,
-                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, OTPService oTPService, CustomerRepository customerRepository, EmailService emailService) {
+                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, OTPService oTPService, CustomerRepository customerRepository, EmailService emailService, RoleRepository roleRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
@@ -50,6 +51,7 @@ public class AuthService implements IAuthService {
         this.oTPService = oTPService;
         this.customerRepository = customerRepository;
         this.emailService = emailService;
+        this.roleRepository = roleRepository;
     }
 
 
@@ -63,7 +65,7 @@ public class AuthService implements IAuthService {
 
 
             Users users = userPrincipal.getUser();
-            String accessToken = jwtService.generateAccessToken(loginRequest.usernameOrEmail(), users.getUserRole(), users.getUserId());
+            String accessToken = jwtService.generateAccessToken(loginRequest.usernameOrEmail(), users.getRoleId().getRoleName().toUpperCase(), users.getUserId());
             System.out.println("access token: " + accessToken);
             ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
                     .httpOnly(true)
@@ -77,7 +79,9 @@ public class AuthService implements IAuthService {
 
             return new LoginResponse(
                  true,
-                    users.getUserRole()
+                    users.getRoleId().getRoleName().toUpperCase(),
+                    users.getUserName(),
+                    users.getEmail()
             );
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("User entered wrong credentials");
@@ -95,6 +99,10 @@ public class AuthService implements IAuthService {
             throw new InvalidEmail();
         }
 
+        Role customerRole = roleRepository.findByRoleName("customer")
+                .orElseThrow(RoleNotFoundException::new);
+        System.out.println("user role: " + customerRole.getRoleName());
+
         Users newUser = Users.builder()
                 .firstName(registrationDTO.firstName().toLowerCase())
                 .lastName(registrationDTO.lastName().toLowerCase())
@@ -103,12 +111,7 @@ public class AuthService implements IAuthService {
                 .password(passwordEncoder.encode(registrationDTO.password()))
                 .email(registrationDTO.email())
                 .phoneNumber(registrationDTO.phoneNumber())
-                .userRole(UserRole.CUSTOMER)
-                .city(registrationDTO.city())
-                .country(registrationDTO.country())
-                .state(registrationDTO.state())
-                .createdAt(Timestamp.from(Instant.now()))
-                .updatedAt(Timestamp.from(Instant.now()))
+                .roleId(customerRole)
                 .isActive(true)
                 .isEmailValid(false)
                 .build();

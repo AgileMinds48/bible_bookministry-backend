@@ -4,7 +4,6 @@ import com.evbooksministry.bibleandbookministry.models.Category;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.UUID;
 
 public record BookDTO(
@@ -19,7 +18,6 @@ public record BookDTO(
         Timestamp updatedOn,
         Integer amountSold,
         Category bookCategory,
-        Integer amountInStock,
-        List<String> media
+        Integer amountInStock
 ) {
 }

@@ -1,8 +1,9 @@
 package com.evbooksministry.bibleandbookministry.config;
 
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
+
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -22,34 +23,37 @@ import java.util.function.Function;
 @Service
 public class JWTService {
     private final UserRepository userRepository;
-    private String secretKey = System.getenv("JWT_SECRET");
+
+    Dotenv dotenv = Dotenv.configure().load();
+    private String secretKey = dotenv.get("JWT_SECRET");
 
     public JWTService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
 
-    public String generateRefreshToken(String username, UserRole role, UUID userID) {
+    public String generateRefreshToken(String username, String role, UUID userID) {
         long refreshTokenExp = 15552000000L;
         return generateToken(username, refreshTokenExp, role, userID);
     }
 
-    public String generateAccessToken(String username, UserRole role, UUID userId) {
+    public String generateAccessToken(String username, String role, UUID userId) {
         long accessTokenExpirationTime = 15552000000L;
         return generateToken(username, accessTokenExpirationTime, role, userId);
     }
 
-    public String generateToken(String username, long expirationTime, UserRole role, UUID userId) {
+    public String generateToken(String username, long expirationTime, String role, UUID userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
 
         Map<String, Object> claims = new HashMap<>();
-        if (user.getUserRole().equals(UserRole.ADMIN)) {
+        if ("ADMIN".equals(role)) {
             claims.put("adminId", user.getUserId().toString());
-        } else if (user.getUserRole().equals(UserRole.CUSTOMER)) {
+        } else if ("CUSTOMER".equals(role)) {
             claims.put("customerId", user.getUserId().toString());
         }
         claims.put("role", role);
+        claims.put("username", user.getUserName());
         System.out.println("expiration time in jwt service: " + expirationTime);
 
         return Jwts.builder()
@@ -86,7 +90,12 @@ public class JWTService {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return Jwts.parser()
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username", String.class);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -119,7 +128,7 @@ public class JWTService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .get("roleId", String.class);
+                .get("role", String.class);
     }
 
     public UUID getCustomerId(HttpServletRequest request) {
@@ -137,6 +146,11 @@ public class JWTService {
     public UUID extractUserId(HttpServletRequest request){
         String authToken = getTokenFromCookie(request.getCookies());
         return extractCustomerId(authToken);
+    }
+
+    public UUID extractAdminId(HttpServletRequest request){
+        String authToken = getTokenFromCookie(request.getCookies());
+        return extractAdminId(authToken);
     }
 
     private String getTokenFromCookie(Cookie[] cookies) {

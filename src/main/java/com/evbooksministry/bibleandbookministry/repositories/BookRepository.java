@@ -1,3 +1,4 @@
+
 package com.evbooksministry.bibleandbookministry.repositories;
 
 import com.evbooksministry.bibleandbookministry.models.Book;
@@ -31,5 +32,10 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
     @Query("select b from Book b order by b.amountSold desc")
     List<Book> getBooksByAmountSold();
+
+
+    List<Book> findByBookTitleContainsIgnoreCase(String query);
+
+    List<Book> findByBookAuthorContainsIgnoreCase(String query);
 
 }

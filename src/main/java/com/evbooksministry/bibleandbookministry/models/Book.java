@@ -21,8 +21,7 @@ import java.util.UUID;
 @Table(
         name = "books",
         indexes = {
-                @Index(name = "idx_book_title", columnList = "bookTitle"),
-                @Index(name = "idx_book_author", columnList = "bookAuthor")
+                @Index(name = "idx_book_title", columnList = "bookTitle")
         }
 )
 @Builder
@@ -48,7 +47,7 @@ public class Book {
     @Column(nullable = false)
     private String bookAuthor;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "text")
     private String bookDescription;
 
     @Size(max = 255)

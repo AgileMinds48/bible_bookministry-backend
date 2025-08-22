@@ -2,6 +2,7 @@ package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.models.Users;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -19,6 +20,7 @@ public class UserPrincipal implements UserDetails {
 
     public UserPrincipal(Users user) {
         this.user = user;
+        this.authorities = createAuthorities(user);
     }
 
     public Users getUser() {
@@ -27,7 +29,11 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return authorities;
+    }
+
+    private Collection<? extends GrantedAuthority> createAuthorities(Users user) {
+        return List.of(new SimpleGrantedAuthority(user.getRoleId().getRoleName()));
     }
 
     @Override
@@ -35,10 +41,15 @@ public class UserPrincipal implements UserDetails {
         return user.getPassword();
     }
 
+    public String getUserEmail() {
+        return user.getEmail();
+    }
+
     @Override
     public String getUsername() {
         return user.getEmail();
     }
+
 
     @Override
     public boolean isAccountNonExpired() {

@@ -2,12 +2,12 @@ package com.evbooksministry.bibleandbookministry.controllers;
 
 import com.evbooksministry.bibleandbookministry.config.JWTService;
 import com.evbooksministry.bibleandbookministry.dtos.*;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.BookNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidDetails;
 import com.evbooksministry.bibleandbookministry.exceptions.UnauthorizedAction;
 import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
+import com.evbooksministry.bibleandbookministry.models.Role;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.BookRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
@@ -67,6 +67,10 @@ public class AdminController {
         return adminService.getAllUsers();
     }
 
+    @GetMapping("get-books")
+    public Page<BookDTO> getBooks(Pageable pageable) {
+        return adminService.getAllBooks(pageable);
+    }
 
     @PostMapping("add-book")
     public ResponseEntity<?> addProduct(
@@ -75,17 +79,13 @@ public class AdminController {
 
     ){
         try {
-            String authHeader = request.getHeader("Authorization");
-            String jwtToken = authHeader.substring(7);
-
-            UUID userId = jwtService.extractAdminId(jwtToken);
+            UUID userId = jwtService.extractAdminId(request);
 
             Users user = userRepository.findById(userId)
                     .orElseThrow(UserNotFound::new);
 
-
-            UserRole userRole = user.getUserRole();
-            if (userRole == UserRole.CUSTOMER) {
+            Role userRole = user.getRoleId();
+            if (userRole.getRoleName().equalsIgnoreCase("customer")) {
                 throw new UnauthorizedAction();
             }
             AddBookRequest request = objectMapper.readValue(addBookRequest, AddBookRequest.class);

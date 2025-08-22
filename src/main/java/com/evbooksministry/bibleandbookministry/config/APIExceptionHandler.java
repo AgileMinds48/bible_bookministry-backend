@@ -3,14 +3,15 @@ package com.evbooksministry.bibleandbookministry.config;
 
 import com.evbooksministry.bibleandbookministry.exceptions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -53,14 +54,14 @@ public class APIExceptionHandler {
         return new ResponseEntity<>(apiException, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(value = {MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<?> handleMethodArgumentMismatchException(MethodArgumentTypeMismatchException ex, HttpServletRequest request){
+    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
+    public ResponseEntity<?> handleWrongRequestMethod(HttpRequestMethodNotSupportedException ex, HttpServletRequest request){
         APIException apiException = new APIException(
                 "error",
                 HttpStatus.BAD_REQUEST.value(),
                 new APIException.ApiError(
                         HttpStatus.BAD_REQUEST,
-                        "Client sent wrong parameter.",
+                        "Client is using wrong request method",
                         Timestamp.from(Instant.now()),
                         request.getRequestURI()
                 ),
@@ -69,9 +70,27 @@ public class APIExceptionHandler {
         Sentry.setTag("requestId", request.getRequestId());
         Sentry.setExtra("path", request.getRequestURI());
         Sentry.captureException(ex);
-        return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST  );
     }
 
+    @ExceptionHandler(value = {EmployeeNotFound.class})
+    public ResponseEntity<?> handleEmployeeNotFoun(EmployeeNotFound ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "error",
+                HttpStatus.NOT_FOUND.value(),
+                new APIException.ApiError(
+                        HttpStatus.NOT_FOUND,
+                        "Employee not found",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestId()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND  );
+    }
 
     @ExceptionHandler(value = {EmptyCart.class})
     public ResponseEntity<?> handleEmptyCartException(EmptyCart ex, HttpServletRequest request){
@@ -100,6 +119,25 @@ public class APIExceptionHandler {
                 new APIException.ApiError(
                         HttpStatus.BAD_REQUEST,
                         "User's session has expired. Please login again",
+                        Timestamp.from(Instant.now()),
+                        request.getRequestURI()
+                ),
+                request.getRequestURI()
+        );
+        Sentry.setTag("requestId", request.getRequestId());
+        Sentry.setExtra("path", request.getRequestURI());
+        Sentry.captureException(ex);
+        return new ResponseEntity<>(apiException, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<?> handleInvalidFormatException(InvalidFormatException ex, HttpServletRequest request){
+        APIException apiException = new APIException(
+                "error",
+                HttpStatus.BAD_REQUEST.value(),
+                new APIException.ApiError(
+                        HttpStatus.BAD_REQUEST,
+                        "Client sent wrong category",
                         Timestamp.from(Instant.now()),
                         request.getRequestURI()
                 ),

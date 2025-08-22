@@ -6,6 +6,7 @@ import com.evbooksministry.bibleandbookministry.exceptions.CategoryDoesNotExist;
 import com.evbooksministry.bibleandbookministry.exceptions.EmployeeNotFound;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidDetails;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
+import com.evbooksministry.bibleandbookministry.mappers.CustomerOrderMapper;
 import com.evbooksministry.bibleandbookministry.models.Book;
 import com.evbooksministry.bibleandbookministry.models.Category;
 import com.evbooksministry.bibleandbookministry.models.Employee;
@@ -39,12 +40,14 @@ public class BookService implements IBookService {
     private final BookMapper bookMapper;
     private final EmployeeRepository employeeRepository;
     private final CategoryRepository categoryRepository;
+    private final CustomerOrderMapper customerOrderMapper;
 
     public BookService(BookRepository bookRepository,
                        CloudinaryService cloudinaryService,
                        ObjectMapper objectMapper,
                        UserRepository userRepository,
-                       BookMapper bookMapper, EmployeeRepository employeeRepository, CategoryRepository categoryRepository) {
+                       BookMapper bookMapper, EmployeeRepository employeeRepository, CategoryRepository categoryRepository,
+                       CustomerOrderMapper customerOrderMapper) {
         this.bookRepository = bookRepository;
         this.cloudinaryService = cloudinaryService;
         this.objectMapper = objectMapper;
@@ -52,6 +55,7 @@ public class BookService implements IBookService {
         this.bookMapper = bookMapper;
         this.employeeRepository = employeeRepository;
         this.categoryRepository = categoryRepository;
+        this.customerOrderMapper = customerOrderMapper;
     }
 
 
@@ -221,6 +225,20 @@ public class BookService implements IBookService {
         return bookMapper.bookEntityToBookDTO(book);
     }
 
+
+    public List<BookDTO> searchByTitle(String title){
+        return bookRepository.findByBookTitleContainsIgnoreCase(title)
+                .stream()
+                .map(bookMapper::bookEntityToBookDTO)
+                .toList();
+    }
+
+    public List<BookDTO> searchByAuthor(String author){
+        return bookRepository.findByBookAuthorContainsIgnoreCase(author)
+                .stream()
+                .map(bookMapper::bookEntityToBookDTO)
+                .toList();
+    }
     private List<String> updateProductMedia(MultipartFile [] files) throws IOException {
         List<String> newProductMedia = new ArrayList<>();
         for (MultipartFile file : files) {

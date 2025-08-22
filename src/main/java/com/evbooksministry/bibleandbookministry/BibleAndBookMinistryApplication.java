@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BibleAndBookMinistryApplication {
 
 	public static void main(String[] args) {
-		System.setProperty("MAIL_HOST", System.getenv("MAIL_HOST"));
+        System.setProperty("MAIL_HOST", System.getenv("MAIL_HOST"));
 		System.setProperty("MAIL_PORT", System.getenv("MAIL_PORT"));
 		System.setProperty("MAIL_USERNAME", System.getenv("MAIL_USERNAME"));
 		System.setProperty("MAIL_PASSWORD", System.getenv("MAIL_PASSWORD"));

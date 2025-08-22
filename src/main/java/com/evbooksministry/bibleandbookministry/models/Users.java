@@ -2,7 +2,6 @@ package com.evbooksministry.bibleandbookministry.models;
 
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
 import com.evbooksministry.bibleandbookministry.enums.Gender;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -24,7 +23,8 @@ public class Users {
     private UUID userId;
 
     @OneToOne
-    @JoinColumn(name = "roleId")
+    @JoinColumn(name = "role_Id")
+    @JsonManagedReference
     private Role roleId;
 
     @Column(nullable = false)
@@ -48,12 +48,9 @@ public class Users {
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole userRole;
-
-    private String city;
+/*    private String city;
     private String country;
-    private String state;
+    private String state;*/
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -76,7 +73,7 @@ public class Users {
     private Customer customer;
 
 
-    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, UserRole userRole, String city, String country, String state, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
+    public Users(UUID userId, Role roleId, String firstName, String lastName, String userName, Gender userGender, String password, String email, String phoneNumber, Timestamp createdAt, Timestamp updatedAt, UserStatus userStatus, boolean isActive, boolean isEmailValid, DeleteYn deleteYn, Customer customer) {
         this.userId = userId;
         this.roleId = roleId;
         this.firstName = firstName;
@@ -86,10 +83,6 @@ public class Users {
         this.password = password;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.userRole = userRole;
-        this.city = city;
-        this.country = country;
-        this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userStatus = userStatus;
@@ -151,6 +144,8 @@ public class Users {
         return userName;
     }
 
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -187,14 +182,6 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
-    }
-
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -211,30 +198,29 @@ public class Users {
         this.updatedAt = updatedAt;
     }
 
-    public String getCity() {
-        return city;
+    public Role getRoleId() {
+        return roleId;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setRoleId(Role roleId) {
+        this.roleId = roleId;
     }
 
-    public String getCountry() {
-        return country;
+    public DeleteYn getDeleteYn() {
+        return deleteYn;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setDeleteYn(DeleteYn deleteYn) {
+        this.deleteYn = deleteYn;
     }
 
-    public String getState() {
-        return state;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
-
 
     public UserStatus getUserStatus() {
         return userStatus;
@@ -263,10 +249,6 @@ public class Users {
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", userRole=" + userRole +
-                ", city='" + city + '\'' +
-                ", country='" + country + '\'' +
-                ", state='" + state + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", userStatus=" + userStatus +

@@ -1,13 +1,15 @@
 package com.evbooksministry.bibleandbookministry.dtos;
 
 import com.evbooksministry.bibleandbookministry.enums.DeleteYn;
-import com.evbooksministry.bibleandbookministry.models.Users;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 public record RoleDTO(
+        UUID roleId,
         String roleName,
-        Users createdBy,
+        String roleCode,
+        String description,
         Timestamp createdAt,
         Timestamp updatedAt,
         DeleteYn deleteYn

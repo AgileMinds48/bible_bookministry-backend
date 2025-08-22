@@ -10,6 +10,7 @@ import com.evbooksministry.bibleandbookministry.repositories.*;
 import com.evbooksministry.bibleandbookministry.serviceInterfaces.IPaymentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,7 +32,8 @@ public class PaymentService implements IPaymentService {
 
 
 
-    private final String secretKey = System.getenv("PAYSTACK_SECRET") ;
+    Dotenv dotenv = Dotenv.configure().load();
+    private final String secretKey = dotenv.get("PAYSTACK_SECRET") ;
 
     public PaymentService(RestTemplate restTemplate,
                           PaymentRepository paymentRepository,

@@ -5,13 +5,14 @@ import com.evbooksministry.bibleandbookministry.dtos.AdminDTO;
 import com.evbooksministry.bibleandbookministry.dtos.BookDTO;
 import com.evbooksministry.bibleandbookministry.dtos.CustomerOrderDTO;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
-import com.evbooksministry.bibleandbookministry.enums.UserRole;
 import com.evbooksministry.bibleandbookministry.exceptions.CustomerNotFound;
+import com.evbooksministry.bibleandbookministry.exceptions.RoleNotFoundException;
 import com.evbooksministry.bibleandbookministry.mappers.BookMapper;
 import com.evbooksministry.bibleandbookministry.mappers.CustomerOrderMapper;
 import com.evbooksministry.bibleandbookministry.mappers.UserMapper;
 import com.evbooksministry.bibleandbookministry.models.Customer;
 import com.evbooksministry.bibleandbookministry.models.Employee;
+import com.evbooksministry.bibleandbookministry.models.Role;
 import com.evbooksministry.bibleandbookministry.models.Users;
 import com.evbooksministry.bibleandbookministry.repositories.*;
 import org.springframework.data.domain.Page;
@@ -37,6 +38,7 @@ public class AdminService {
     private final PaymentRepository paymentRepository;
     private final CustomerOrderMapper customerOrderMapper;
     private final CustomerRepository customerRepository;
+    private final RoleRepository roleRepository;
 
     public AdminService(UserRepository userRepository,
                         EmailService emailService,
@@ -48,7 +50,7 @@ public class AdminService {
                         EmployeeRepository employeeRepository,
                         OrderRepository orderRepository,
                         PaymentRepository paymentRepository,
-                        CustomerOrderMapper customerOrderMapper, CustomerRepository customerRepository) {
+                        CustomerOrderMapper customerOrderMapper, CustomerRepository customerRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.bookRepository = bookRepository;
@@ -61,6 +63,7 @@ public class AdminService {
         this.paymentRepository = paymentRepository;
         this.customerOrderMapper = customerOrderMapper;
         this.customerRepository = customerRepository;
+        this.roleRepository = roleRepository;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -82,20 +85,21 @@ public class AdminService {
 
 
     public UserDTO getUserById(UUID id) {
-        return userMapper.userEntityToUserDTO(userRepository.findByUserId(id));
+        return userMapper.userEntityToUserDTO(userRepository.findByUserId(id).get());
     }
 
     public UserDTO registerAdmin(AdminDTO admin) {
+        Role adminRole = roleRepository.findByRoleName("ADMIN")
+                .orElseThrow(RoleNotFoundException::new);
         Users user = new Users();
         user.setEmail(admin.email());
         user.setUserName(admin.userName());
         user.setPhoneNumber(admin.phone());
-        user.setUserRole(UserRole.ADMIN);
+        user.setRoleId(adminRole);
         user.setPassword(passwordEncoder.encode(admin.password()));
         user.setFirstName(admin.firstname());
         user.setLastName(admin.lastname());
         user.setActive(true);
-        user.setEmailValid(true);
         userRepository.save(user);
 
         Employee employee = new Employee();
