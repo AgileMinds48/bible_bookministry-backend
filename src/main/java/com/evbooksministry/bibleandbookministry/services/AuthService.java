@@ -69,7 +69,7 @@ public class AuthService implements IAuthService {
             System.out.println("access token: " + accessToken);
             ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(false)
                     .sameSite("Lax")
                     .path("/")
                     .maxAge(3600)
@@ -101,7 +101,6 @@ public class AuthService implements IAuthService {
 
         Role customerRole = roleRepository.findByRoleName("customer")
                 .orElseThrow(RoleNotFoundException::new);
-        System.out.println("user role: " + customerRole.getRoleName());
 
         Users newUser = Users.builder()
                 .firstName(registrationDTO.firstName().toLowerCase())

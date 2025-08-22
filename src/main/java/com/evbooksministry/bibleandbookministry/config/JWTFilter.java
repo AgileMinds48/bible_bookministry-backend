@@ -1,6 +1,5 @@
 package com.evbooksministry.bibleandbookministry.config;
 
-import com.evbooksministry.bibleandbookministry.exceptions.InvalidToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -62,9 +61,8 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        try{
+        try {
             final String userEmail = jwtService.extractUsername(token);
-
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             System.out.println("auth object: " + authentication);
 
@@ -83,29 +81,24 @@ public class JWTFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, authorities
                     );
-
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     System.out.println("authtoken: " + authenticationToken.toString());
                 }
-                else{
-                    throw new InvalidToken();
-                }
             }
             filterChain.doFilter(request, response);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
 
+    // Add this helper method
     private String getTokenFromAuthorizationHeader(HttpServletRequest request) {
         final String authorizationHeader = request.getHeader("Authorization");
-
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7); // Remove "Bearer " prefix
         }
-
         return null;
     }
 
