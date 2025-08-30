@@ -50,8 +50,9 @@ public class UserController {
 
 
     private UUID extractUserId(HttpServletRequest request){
-        String authToken = getTokenFromCookie(request.getCookies());
-        return jwtService.extractCustomerId(authToken);
+        String header = request.getHeader("Authorization");
+        String token = header.substring(7);
+        return jwtService.extractCustomerId(token);
     }
 
     private String getTokenFromCookie(Cookie[] cookies) {

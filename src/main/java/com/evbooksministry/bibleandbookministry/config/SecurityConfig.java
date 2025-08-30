@@ -51,7 +51,9 @@ public class SecurityConfig {
                                 "/api/v1/books/search",
                                 "/api/v1/roles/create",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "api/v1/books/all-books",
+                                "api/v1/books/*"
                         ).permitAll()
 
                         // Admin-only endpoints (more specific patterns first)
@@ -81,10 +83,7 @@ public class SecurityConfig {
                                 "/api/v1/books/details/**",
                                 "/api/v1/books/list",
                                 "/api/v1/order/checkout"
-                        ).authenticated()
-
-                        // Deny all other requests
-                        .anyRequest().denyAll()
+                        ).permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
@@ -100,7 +99,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "https://yourfrontenddomain.com"
+                "https://bibleministrytest-828a5dfbc148.herokuapp.com"
         ));
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);

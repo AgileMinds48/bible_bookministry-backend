@@ -27,12 +27,6 @@ public class CartController {
         this.request = request;
         this.jwtService = jwtService;
     }
-    private UUID extractID(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        String token = authHeader.substring(7);
-        return jwtService.extractCustomerId(token);
-    }
-
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody AddOrRemoveFromCartRequest addRequest) {
         try{
@@ -77,8 +71,9 @@ public class CartController {
     }
 
     private UUID extractUserId(HttpServletRequest request){
-        String authToken = getTokenFromCookie(request.getCookies());
-        return jwtService.extractCustomerId(authToken);
+        String authHeader = request.getHeader("Authorization");
+        String token = authHeader.substring(7);
+        return jwtService.extractCustomerId(token);
     }
 
     private String getTokenFromCookie(Cookie[] cookies) {
