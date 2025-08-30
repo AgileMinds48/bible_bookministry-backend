@@ -98,7 +98,8 @@ public class SecurityConfig {
                                 "/api/v1/order/checkout"
                         ).permitAll()
                 )
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
