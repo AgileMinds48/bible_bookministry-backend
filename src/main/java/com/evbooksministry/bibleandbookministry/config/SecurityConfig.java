@@ -97,7 +97,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/books/details/**",
                                 "/api/v1/books/list",
-                                "/api/v1/order/checkout"
+                                "/api/v1/order/checkout",
+                                "api/v1/books/get-book/*",
+                                "api/v1/books/get-category/*",
+                                "api/v1/books/all-books"
                         ).permitAll()
                 )
                 .httpBasic(AbstractHttpConfigurer::disable)
