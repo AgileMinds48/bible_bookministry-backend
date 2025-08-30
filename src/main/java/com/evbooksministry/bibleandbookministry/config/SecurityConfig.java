@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/v1/admin/orders/total-sales", // Fixed: added leading slash
                                 "/api/v1/admin/get-user/*",
                                 "/api/v1/admin/get-users",
+                                "api/v1/admin/count-users",
                                 "/api/v1/admin/add-book",
                                 "/api/v1/admin/update-details",
                                 "/api/v1/admin/update-media",

@@ -67,6 +67,11 @@ public class AdminController {
         return adminService.getAllUsers();
     }
 
+    @GetMapping("count-users")
+    public ResponseEntity<?> getUserCount(){
+        return new ResponseEntity<>(adminService.getUserCount(), HttpStatus.OK);
+    }
+
     @GetMapping("get-books")
     public Page<BookDTO> getBooks(Pageable pageable) {
         return adminService.getAllBooks(pageable);

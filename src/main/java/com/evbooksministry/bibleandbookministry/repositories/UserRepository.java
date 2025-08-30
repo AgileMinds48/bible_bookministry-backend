@@ -25,4 +25,7 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
     Set<Users> findByUserRole(String userRole);
 
     Optional<Users> findByUserId(UUID userId);
+
+    @Query("select count(u) from Users u")
+    Integer getUserCount();
 }

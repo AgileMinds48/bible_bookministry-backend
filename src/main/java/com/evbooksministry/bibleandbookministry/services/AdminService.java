@@ -74,6 +74,10 @@ public class AdminService {
                 .toList();
     }
 
+    public Integer getUserCount(){
+        return userRepository.getUserCount();
+    }
+
     public Page<BookDTO> getAllBooks(Pageable pageable) {
         return bookService.getAllBooks(pageable);
     }
