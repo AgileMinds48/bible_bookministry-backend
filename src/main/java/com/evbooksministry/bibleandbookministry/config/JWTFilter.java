@@ -98,6 +98,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private String getTokenFromAuthorizationHeader(HttpServletRequest request) {
         final String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            System.out.println("auth header: " + authorizationHeader);
             return authorizationHeader.substring(7); // Remove "Bearer " prefix
         }
         return null;
