@@ -99,7 +99,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "https://bibleministrytest-828a5dfbc148.herokuapp.com"
+                "https://bible-bookministry.vercel.app"
         ));
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
