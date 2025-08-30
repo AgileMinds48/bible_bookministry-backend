@@ -18,7 +18,6 @@ import com.evbooksministry.bibleandbookministry.repositories.RoleRepository;
 import com.evbooksministry.bibleandbookministry.repositories.UserRepository;
 import com.evbooksministry.bibleandbookministry.serviceInterfaces.IAuthService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -67,23 +66,13 @@ public class AuthService implements IAuthService {
             Users users = userPrincipal.getUser();
             String accessToken = jwtService.generateAccessToken(loginRequest.usernameOrEmail(), users.getRoleId().getRoleName().toUpperCase(), users.getUserId());
             System.out.println("access token: " + accessToken);
-            ResponseCookie jwtCookie = ResponseCookie.from("JWTAccess_token", accessToken)
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(3600)
-                    .build();
-
-            response.setHeader("Set-Cookie", jwtCookie.toString());
-            System.out.println("jwt cookie " + jwtCookie);
 
             return new LoginResponse(
                  true,
                     users.getRoleId().getRoleName().toUpperCase(),
                     users.getUserName(),
-                    users.getEmail()
-
+                    users.getEmail(),
+                    accessToken
             );
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("User entered wrong credentials");

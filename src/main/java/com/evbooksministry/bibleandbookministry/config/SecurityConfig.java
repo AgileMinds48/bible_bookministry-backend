@@ -20,7 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -51,7 +51,9 @@ public class SecurityConfig {
                                 "/api/v1/books/search",
                                 "/api/v1/roles/create",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "api/v1/books/all-books",
+                                "api/v1/books/*"
                         ).permitAll()
 
                         // Admin-only endpoints (more specific patterns first)
@@ -81,13 +83,9 @@ public class SecurityConfig {
                                 "/api/v1/books/details/**",
                                 "/api/v1/books/list",
                                 "/api/v1/order/checkout"
-                        ).authenticated()
-
-                        // Deny all other requests
-                        .anyRequest().denyAll()
+                        ).permitAll()
                 )
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -97,18 +95,19 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        var c = new CorsConfiguration();
-        c.setAllowedOrigins(List.of(
-                "http://localhost:3000",               // dev
-                "https://<your-frontend-domain>"       // prod UI if/when deployed
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://bibleministrytest-828a5dfbc148.herokuapp.com"
         ));
-        c.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        c.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
-        c.setAllowCredentials(true);             // <-- required for cookies
-        c.setMaxAge(3600L);
-        var s = new UrlBasedCorsConfigurationSource();
-        s.registerCorsConfiguration("/**", c);
-        return s;
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+        configuration.addAllowedHeader("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean

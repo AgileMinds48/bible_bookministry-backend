@@ -39,7 +39,9 @@ public class OrderController {
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout() {
-        UUID userId = jwtService.extractUserId(request);
+        String header = request.getHeader("Authorization");
+        String token = header.substring(7);
+        UUID userId = jwtService.extractCustomerId(token);
         System.out.println("userId from checkout: " + userId);
 
         PaymentResponse response;
@@ -55,7 +57,9 @@ public class OrderController {
 
     @GetMapping("/customer/get-order")
     public ResponseEntity<?> getCustomerOrder() {
-        UUID userID = jwtService.extractUserId(request);
+        String header = request.getHeader("Authorization");
+        String token = header.substring(7);
+        UUID userID = jwtService.extractCustomerId(token);
         Set<OrderItem> orders = orderService.getBuyerOrder(userID);
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
@@ -63,8 +67,10 @@ public class OrderController {
     @PostMapping("/buy-now")
     public ResponseEntity<?> buyNow(@RequestBody BuyNow buyNow) {
         try{
-            UUID userId = jwtService.extractUserId(request);
-            BuyNow finalBuyNow = buyNow.newUserId(userId);
+            String header = request.getHeader("Authorization");
+            String token = header.substring(7);
+            UUID userID = jwtService.extractCustomerId(token);
+            BuyNow finalBuyNow = buyNow.newUserId(userID);
             System.out.println("buy now request: " + finalBuyNow);
             return new ResponseEntity<>(orderService.buyNow(finalBuyNow), HttpStatus.OK);
         }catch (UserNotFoundException e) {

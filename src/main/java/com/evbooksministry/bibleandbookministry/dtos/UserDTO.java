@@ -14,31 +14,7 @@ public record UserDTO (
         String password,
         String email,
         String phoneNumber,
-
-        String city,
-        String country,
-        String state,
         Timestamp createdAt,
-        Timestamp updatedAt,
-        String profilePictureURL
+        Timestamp updatedAt
 ) {
-    public UserDTO newProfilePictureURL(String url){
-        return new UserDTO(
-                this.userId,
-                this.firstName,
-                this.lastName,
-                this.userName,
-                this.userGender,
-                this.password,
-                this.email,
-                this.phoneNumber,
-
-                this.city,
-                this.country,
-                this.state,
-                this.createdAt,
-                this.updatedAt,
-                url
-        );
-    }
 }

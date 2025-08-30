@@ -47,6 +47,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // Try to get token from Authorization header first
         String token = getTokenFromAuthorizationHeader(request);
+        System.out.println("token from auth header: " + token);
 
         // If no token in header, try to get from cookie
         if (token == null) {

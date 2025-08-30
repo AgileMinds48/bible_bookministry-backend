@@ -4,6 +4,7 @@ public record LoginResponse(
         boolean success,
         String userRole,
         String userName,
-        String email
+        String email,
+        String token
 ) {
 }
