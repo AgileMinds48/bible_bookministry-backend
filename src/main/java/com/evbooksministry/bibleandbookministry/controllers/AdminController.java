@@ -79,7 +79,7 @@ public class AdminController {
 
     ){
         try {
-            UUID userId = jwtService.extractAdminId(request);
+            UUID userId = jwtService.getAdminId(request);
 
             Users user = userRepository.findById(userId)
                     .orElseThrow(UserNotFound::new);
