@@ -53,8 +53,9 @@ public class SecurityConfig {
                                 "/api/v1/roles/create",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "api/v1/books/all-books",
-                                "api/v1/books/*"
+                                "/api/v1/books/all-books",
+                                "/api/v1/books/*",
+                                "/api/v1/webhook"
                         ).permitAll()
 
                         // Admin-only endpoints (more specific patterns first)
@@ -82,7 +83,10 @@ public class SecurityConfig {
                                 "/api/v1/admin/orders/customer/*",
                                 "/api/v1/admin/books/highest-selling",
                                 "/api/v1/admin/category/create-defaults",
-                                "/api/v1/admin/category/new"
+                                "/api/v1/admin/category/new",
+                                "/api/v1/roles/create",
+                                "/api/v1/roles/**",
+                                "/api/v1/roles/code/*"
                         ).hasRole("ADMIN")
 
                         // Customer endpoints
@@ -90,7 +94,19 @@ public class SecurityConfig {
                                 "/api/v1/cart/**",
                                 "/api/v1/order/customer/**",
                                 "/api/v1/profile/**",
-                                "/api/v1/reviews/**"
+                                "/api/v1/reviews/**",
+                                "/api/v1/cart/add",
+                                "/api/v1/cart/remove-item",
+                                "/api/v1/cart/clear",
+                                "/api/v1/cart/get-items",
+                                "/api/v1/order/checkout",
+                                "/api/v1/order/customer/get-order",
+                                "/api/v1/order/buy-now",
+                                "/api/v1/order/get-order/**",
+                                "/api/v1/order/update-status",
+                                "/api/v1/user/book-catalog",
+                                "/api/v1/user/get-book/**",
+                                "/api/v1/cart/add"
                         ).hasRole("CUSTOMER")
 
                         // Shared endpoints requiring authentication (any authenticated user)
