@@ -8,7 +8,6 @@ import com.evbooksministry.bibleandbookministry.dtos.RequestEmailValidation;
 import com.evbooksministry.bibleandbookministry.dtos.UserDTO;
 import com.evbooksministry.bibleandbookministry.exceptions.InvalidEmail;
 import com.evbooksministry.bibleandbookministry.exceptions.UserAlreadyExists;
-import com.evbooksministry.bibleandbookministry.exceptions.UserNotFound;
 import com.evbooksministry.bibleandbookministry.services.AuthService;
 import com.evbooksministry.bibleandbookministry.services.CloudinaryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +52,7 @@ public class AuthController {
                     HttpStatus.OK
             );
         } catch (UserAlreadyExists e) {
-            throw new UserNotFound();
+            throw new UserAlreadyExists();
         } catch (InvalidEmail e){
             throw new InvalidEmail();
         }
