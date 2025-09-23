@@ -29,6 +29,7 @@ public class AllRequestsLoggingFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        System.out.println("I the request logging filter niggaaaaaaa");
         RequestLog newLog = RequestLog
                 .builder()
                 .timestamp(Timestamp.from(Instant.now()))
