@@ -1,7 +1,6 @@
-package com.evbooksministry.bibleandbookministry;
+package com.evbooksministry.bibleandbookministry.config;
 
 
-import com.evbooksministry.bibleandbookministry.config.RequestLogRepository;
 import com.evbooksministry.bibleandbookministry.models.RequestLog;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;

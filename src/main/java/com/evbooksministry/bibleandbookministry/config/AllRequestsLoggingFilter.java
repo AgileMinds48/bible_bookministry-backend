@@ -1,7 +1,7 @@
 package com.evbooksministry.bibleandbookministry.config;
 
-import com.arete.korbly.infrastructure.domain.RequestLog;
-import com.arete.korbly.infrastructure.persistence.RequestLogRepository;
+
+import com.evbooksministry.bibleandbookministry.models.RequestLog;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
