@@ -139,7 +139,7 @@ public class SecurityConfig {
                             response.getWriter().write("{\"error\": \"Ground Up chaleeeeeeeeeee\"}");
                         })
                 )
-                .addFilterBefore(loggingFilter, JWTFilter.class)
+                .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
