@@ -28,12 +28,15 @@ import java.util.Arrays;
 public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
+    private final AllRequestsLoggingFilter loggingFilter;
 
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
-                          JWTFilter jwtFilter) {
+                          JWTFilter jwtFilter,
+                          AllRequestsLoggingFilter loggingFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
+        this.loggingFilter = loggingFilter;
     }
 
     @Bean
@@ -136,6 +139,7 @@ public class SecurityConfig {
                             response.getWriter().write("{\"error\": \"Ground Up chaleeeeeeeeeee\"}");
                         })
                 )
+                .addFilterBefore(loggingFilter, JWTFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
