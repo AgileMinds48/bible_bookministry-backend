@@ -151,7 +151,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "https://bible-bookministry.vercel.app",
-                "https://www.bibleandbookministry.app"
+                "https://www.bibleandbookministry.app",
+                "https://bibleandbookministry.app"
         ));
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
